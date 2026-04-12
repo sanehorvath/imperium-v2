@@ -3,7 +3,7 @@ import { useApp } from '../lib/AppContext'
 import { C, st } from '../lib/design'
 import { Modal, EmptyState, Field } from '../components/UI'
 
-const BLANK_PROFILE = { name: '', color: '#C8A96E', age: '', nationalite: '', ville: '', style: '', caractere: '', ton_dms: '', sujets_ok: [], sujets_eviter: [], objectif_mois: '', tags_of: [], notes: '', login_of: '', password_of: '', login_twitter: '', password_twitter: '', admin_notes: '', split_modele: 40, cout_chatting_type: 'pct', cout_chatting_valeur: 22 }
+const BLANK_PROFILE = { name: '', color: '#C8A96E', age: null, nationalite: '', ville: '', style: '', caractere: '', ton_dms: '', sujets_ok: [], sujets_eviter: [], objectif_mois: '', tags_of: [], notes: '', login_of: '', password_of: '', login_twitter: '', password_twitter: '', admin_notes: '', split_modele: 40, cout_chatting_type: 'pct', cout_chatting_valeur: 22 }
 
 export default function AdminModeles() {
   const { data, upsert, insert, remove } = useApp()
@@ -33,7 +33,9 @@ export default function AdminModeles() {
   }
 
   async function saveProfile() {
-    await upsert('models', { ...form, id: selId }, 'models')
+    // Clean integer fields
+    const cleanForm = { ...form, age: form.age === '' || form.age === null ? null : Number(form.age) }
+    await upsert('models', { ...cleanForm, id: selId }, 'models')
     setEditOpen(false)
   }
 
