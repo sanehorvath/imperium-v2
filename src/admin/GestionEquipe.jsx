@@ -27,25 +27,21 @@ export default function GestionEquipe() {
   async function inviteMember() {
     setInviting(true)
     setInviteMsg('')
-    const { data: { session } } = await supabase.auth.getSession()
-    const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/auth/v1/invite`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
-        'Authorization': `Bearer ${session?.access_token}`,
-      },
-      body: JSON.stringify({
-        email: inviteForm.email,
-        data: { name: inviteForm.name, role: inviteForm.role }
+    try {
+      const res = await fetch('/api/invite-user', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: inviteForm.email, name: inviteForm.name, role: inviteForm.role })
       })
-    })
-    if (res.ok) {
-      setInviteMsg('✓ Invitation envoyée — l\'utilisateur recevra un email')
-      setTimeout(() => { setInviteOpen(false); setInviteMsg(''); loadData() }, 2000)
-    } else {
-      const err = await res.json()
-      setInviteMsg(`Erreur : ${err.message || 'Invitation échouée'}`)
+      const json = await res.json()
+      if (res.ok) {
+        setInviteMsg("✓ Invitation envoyée — l'utilisateur recevra un email")
+        setTimeout(() => { setInviteOpen(false); setInviteMsg(''); loadData() }, 2000)
+      } else {
+        setInviteMsg(`Erreur : ${json.error || 'Invitation échouée'}`)
+      }
+    } catch(e) {
+      setInviteMsg(`Erreur réseau : ${e.message}`)
     }
     setInviting(false)
   }
