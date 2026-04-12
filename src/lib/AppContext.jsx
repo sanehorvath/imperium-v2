@@ -54,30 +54,33 @@ export function AppProvider({ children }) {
     }
   }, [])
 
-  useEffect(() => {
-    let mounted = true
+  const initSession = useCallback(async (sessionUser) => {
+    if (!sessionUser) { setLoading(false); return }
+    setUser(sessionUser)
+    const p = await getProfile(sessionUser.id)
+    setProfile(p)
+    await loadData()
+    setLoading(false)
+  }, [loadData])
 
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      if (!mounted) return
+  useEffect(() => {
+    // 1. Charge la session existante immédiatement au mount
+    supabase.auth.getSession().then(({ data: { session } }) => {
       if (session?.user) {
-        setUser(session.user)
-        const p = await getProfile(session.user.id)
-        if (mounted) {
-          setProfile(p)
-          await loadData()
-        }
+        initSession(session.user)
+      } else {
+        setLoading(false)
       }
-      if (mounted) setLoading(false)
     })
 
+    // 2. Écoute les changements (login/logout)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (!mounted) return
       if (event === 'SIGNED_IN' && session?.user) {
-        setUser(session.user)
-        const p = await getProfile(session.user.id)
-        setProfile(p)
-        await loadData()
-        setLoading(false)
+        // Seulement si pas déjà initialisé
+        setUser(prev => {
+          if (!prev) initSession(session.user)
+          return prev || session.user
+        })
       } else if (event === 'SIGNED_OUT') {
         setUser(null)
         setProfile(null)
@@ -86,42 +89,39 @@ export function AppProvider({ children }) {
       }
     })
 
-    return () => {
-      mounted = false
-      subscription.unsubscribe()
-    }
-  }, [loadData])
+    return () => subscription.unsubscribe()
+  }, [initSession])
 
   const upsert = useCallback(async (table, record, localKey) => {
     const { data: updated, error } = await supabase.from(table).upsert(record).select().single()
-    if (!error && localKey && updated) {
+    if (error) { console.warn('[IMPERIUM] upsert error:', error.message); return false }
+    if (localKey && updated) {
       setData(prev => ({
         ...prev,
-        [localKey]: prev[localKey].some(r => r.id === record.id)
+        [localKey]: prev[localKey]?.some(r => r.id === record.id)
           ? prev[localKey].map(r => r.id === record.id ? updated : r)
-          : [...prev[localKey], updated]
+          : [...(prev[localKey] || []), updated]
       }))
     }
-    if (error) console.warn('[IMPERIUM] upsert error:', error.message)
-    return !error
+    return true
   }, [])
 
   const insert = useCallback(async (table, record, localKey) => {
     const { data: inserted, error } = await supabase.from(table).insert(record).select().single()
-    if (!error && localKey && inserted) {
+    if (error) { console.warn('[IMPERIUM] insert error:', error.message); return null }
+    if (localKey && inserted) {
       setData(prev => ({ ...prev, [localKey]: [...(prev[localKey] || []), inserted] }))
     }
-    if (error) console.warn('[IMPERIUM] insert error:', error.message)
-    return error ? null : inserted
+    return inserted
   }, [])
 
   const remove = useCallback(async (table, id, localKey) => {
     const { error } = await supabase.from(table).delete().eq('id', id)
-    if (!error && localKey) {
+    if (error) { console.warn('[IMPERIUM] delete error:', error.message); return false }
+    if (localKey) {
       setData(prev => ({ ...prev, [localKey]: prev[localKey].filter(r => r.id !== id) }))
     }
-    if (error) console.warn('[IMPERIUM] delete error:', error.message)
-    return !error
+    return true
   }, [])
 
   return (
