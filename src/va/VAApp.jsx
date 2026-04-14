@@ -9,6 +9,7 @@ import Formation from '../admin/Formation'
 import MediaLibrary from '../admin/MediaLibrary'
 import Stories from '../admin/Stories'
 import MonProfil from '../admin/MonProfil'
+import VAInfos from './VAInfos'
 
 const NAV_VA = [
   { section: 'Mon espace', items: [
@@ -43,7 +44,7 @@ export default function VAApp() {
       case 'va_formation': return <Formation isAdmin={false} />
       case 'va_media':     return <MediaLibrary isAdmin={false} />
       case 'va_stories':   return <Stories isAdmin={false} />
-      case 'va_infos':     return <MonProfil />
+      case 'va_infos':     return <VAInfos />
       case 'va_warns':     return <VAWarns />
       default:             return <VAAccueil />
     }
