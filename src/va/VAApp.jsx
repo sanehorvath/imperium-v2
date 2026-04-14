@@ -9,7 +9,7 @@ import Formation from '../admin/Formation'
 import MediaLibrary from '../admin/MediaLibrary'
 import Stories from '../admin/Stories'
 import MonProfil from '../admin/MonProfil'
-import VAInfos from './VAInfos'
+import VAInfos from './Vainfos'
 
 const NAV_VA = [
   { section: 'Mon espace', items: [
@@ -81,27 +81,71 @@ export default function VAApp() {
 }
 
 function VAWarns() {
-  const { data, profile } = useApp()
+  const { data, profile, upsert } = useApp()
   const warns = (data?.vaWarns || []).filter(w => w.va_id === profile?.id)
+  const [replyOpen, setReplyOpen] = React.useState(null)
+  const [replyText, setReplyText] = React.useState('')
+
+  async function saveReply(warn) {
+    await upsert('va_warns', { ...warn, reply: replyText }, 'vaWarns')
+    setReplyOpen(null)
+    setReplyText('')
+  }
+
   return (
-    <div>
-      <div style={{ ...st.card(18) }}>
-        <div style={{ ...st.cTitle, marginBottom: 16 }}>Mes avertissements</div>
-        {warns.length === 0
-          ? <div style={{ color: C.green, fontSize: 13, textAlign: 'center', padding: '20px 0' }}>✓ Aucun avertissement</div>
-          : warns.map(w => (
-              <div key={w.id} style={{ ...st.card2(14), marginBottom: 8, borderLeft: `3px solid ${w.niveau === 'grave' ? C.red : C.orange}` }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                  <span style={{ fontWeight: 600, fontSize: 13 }}>{w.motif}</span>
-                  <span style={{ fontSize: 11, color: C.sub }}>{w.date}</span>
+    <div style={{ maxWidth: 600 }}>
+      <div style={{ fontSize: 11, color: C.sub, marginBottom: 16, fontWeight: 600 }}>
+        {warns.length === 0 ? '✓ Aucun avertissement actif' : `${warns.length} avertissement${warns.length > 1 ? 's' : ''}`}
+      </div>
+      {warns.length === 0
+        ? <div style={{ ...st.card(20), textAlign: 'center', color: C.green }}>
+            <div style={{ fontSize: 28, marginBottom: 8 }}>✓</div>
+            <div style={{ fontWeight: 700 }}>Tout est bon !</div>
+            <div style={{ fontSize: 12, color: C.sub, marginTop: 4 }}>Aucun avertissement en cours</div>
+          </div>
+        : warns.map(w => (
+            <div key={w.id} style={{
+              background: C.surface,
+              border: `1px solid ${w.niveau === 'grave' ? C.red + '44' : C.orange + '44'}`,
+              borderLeft: `3px solid ${w.niveau === 'grave' ? C.red : C.orange}`,
+              borderRadius: 10, padding: '14px 16px', marginBottom: 10,
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 }}>
+                <div>
+                  <span style={{ fontSize: 11, color: w.niveau === 'grave' ? C.red : C.orange, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                    {w.niveau === 'grave' ? '⚠ Grave' : '⚡ Avertissement'}
+                  </span>
+                  <div style={{ fontWeight: 600, fontSize: 14, marginTop: 3 }}>{w.motif}</div>
                 </div>
-                <span style={{ fontSize: 11, color: w.niveau === 'grave' ? C.red : C.orange, fontWeight: 600 }}>
-                  {w.niveau === 'grave' ? '⚠ Avertissement grave' : '⚡ Avertissement'}
+                <span style={{ fontSize: 11, color: C.sub, flexShrink: 0, marginLeft: 12 }}>
+                  {new Date(w.date).toLocaleDateString('fr-FR')}
                 </span>
               </div>
-            ))
-        }
-      </div>
+              {w.reply && (
+                <div style={{ background: C.surface2, borderRadius: 7, padding: '8px 12px', fontSize: 12, color: C.sub, marginTop: 8 }}>
+                  <span style={{ color: C.accent, fontWeight: 600 }}>Ta réponse : </span>{w.reply}
+                </div>
+              )}
+              {replyOpen === w.id
+                ? <div style={{ marginTop: 10 }}>
+                    <textarea
+                      style={{ ...st.textarea, minHeight: 60, marginBottom: 8 }}
+                      value={replyText}
+                      onChange={e => setReplyText(e.target.value)}
+                      placeholder="Écris ta réponse..."
+                    />
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      <button style={st.btn('ghost', 'sm')} onClick={() => setReplyOpen(null)}>Annuler</button>
+                      <button style={st.btn('primary', 'sm')} onClick={() => saveReply(w)} disabled={!replyText}>Envoyer</button>
+                    </div>
+                  </div>
+                : <button style={{ ...st.btn('ghost', 'xs'), marginTop: 8 }} onClick={() => { setReplyOpen(w.id); setReplyText(w.reply || '') }}>
+                    {w.reply ? '✏ Modifier ma réponse' : '💬 Répondre'}
+                  </button>
+              }
+            </div>
+          ))
+      }
     </div>
   )
 }
