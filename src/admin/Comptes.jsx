@@ -99,49 +99,70 @@ export default function Comptes({ isAdmin = false, isTL = false }) {
 
   return (
     <div style={{ display: 'flex', gap: 16 }}>
-      {/* Liste */}
-      <div style={{ width: 230, flexShrink: 0 }}>
+      {/* Liste compacte */}
+      <div style={{ width: 200, flexShrink: 0 }}>
         <div style={{ ...st.card(0), overflow: 'hidden' }}>
-          <div style={{ padding: '11px 14px 8px', borderBottom: `1px solid ${C.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div style={st.cTitle}>Comptes ({filtered.length})</div>
-            <div style={{ display: 'flex', gap: 5 }}>
+          {/* Header */}
+          <div style={{ padding: '10px 12px 8px', borderBottom: `1px solid ${C.border}` }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 7 }}>
+              <div style={st.cTitle}>{showArchives ? `Archives` : `Comptes`} <span style={{ color: C.muted }}>({filtered.length})</span></div>
               <button style={st.btn('primary', 'xs')} onClick={openAdd}>+</button>
-              <button style={st.btn(showArchives ? 'primary' : 'ghost', 'xs')} onClick={() => setShowArchives(v => !v)} title="Archives">
-                {showArchives ? '← Actifs' : `📦${archived.length}`}
-              </button>
+            </div>
+            <div style={{ display: 'flex', gap: 4 }}>
+              <button onClick={() => setShowArchives(false)} style={{ ...st.btn(!showArchives ? 'primary' : 'ghost', 'xs'), flex: 1, justifyContent: 'center', fontSize: 10 }}>Actifs</button>
+              <button onClick={() => setShowArchives(true)} style={{ ...st.btn(showArchives ? 'primary' : 'ghost', 'xs'), flex: 1, justifyContent: 'center', fontSize: 10 }}>📦 {archived.length}</button>
             </div>
           </div>
 
-          {/* Filters */}
+          {/* Filtre modèle */}
           {isAdmin && (
-            <div style={{ padding: '8px 10px', borderBottom: `1px solid ${C.border}`, display: 'flex', gap: 6 }}>
-              <select style={{ ...st.input, fontSize: 11, padding: '4px 8px' }} value={filterModel} onChange={e => setFilterModel(e.target.value)}>
-                <option value="all">Tous modèles</option>
+            <div style={{ padding: '6px 8px', borderBottom: `1px solid ${C.border}` }}>
+              <select style={{ ...st.input, fontSize: 11, padding: '3px 7px', width: '100%' }} value={filterModel} onChange={e => setFilterModel(e.target.value)}>
+                <option value="all">Tous les modèles</option>
                 {models.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
               </select>
             </div>
           )}
 
-          <div style={{ maxHeight: 500, overflowY: 'auto' }}>
+          {/* Liste compacte — juste icône + username */}
+          <div style={{ maxHeight: 520, overflowY: 'auto' }}>
             {filtered.length === 0
-              ? <div style={{ padding: 16, color: C.muted, fontSize: 12, textAlign: 'center' }}>Aucun compte</div>
+              ? <div style={{ padding: '14px 0', color: C.muted, fontSize: 11, textAlign: 'center' }}>Aucun compte</div>
               : filtered.map(acc => {
                   const pl = platInfo(acc.platform)
                   const st2 = statInfo(acc.statut)
-                  const active = selId === acc.id
+                  const isActive = selId === acc.id
                   return (
                     <button key={acc.id} onClick={() => setSelId(acc.id)} style={{
-                      width: '100%', textAlign: 'left', padding: '9px 14px', cursor: 'pointer',
-                      background: active ? C.accentDim : 'transparent',
-                      border: 'none', borderLeft: active ? `2px solid ${C.accent}` : '2px solid transparent',
-                      borderBottom: `1px solid ${C.border}`,
+                      width: '100%', textAlign: 'left',
+                      padding: '7px 10px',
+                      cursor: 'pointer',
+                      background: isActive ? `${pl.color}18` : 'transparent',
+                      border: 'none',
+                      borderLeft: isActive ? `2px solid ${pl.color}` : '2px solid transparent',
+                      borderBottom: `1px solid ${C.border}11`,
                       fontFamily: "'DM Sans', sans-serif",
+                      display: 'flex', alignItems: 'center', gap: 7,
                     }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                        <div style={{ width: 24, height: 24, borderRadius: 5, background: pl.color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 800, color: '#fff', flexShrink: 0 }}>{pl.icon}</div>
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ fontSize: 12, fontWeight: active ? 700 : 400, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: active ? C.text : C.sub }}>{acc.username}</div>
-                          <div style={{ fontSize: 10, color: st2.color }}>{st2.label}</div>
+                      {/* Icône plateforme colorée */}
+                      <div style={{
+                        width: 22, height: 22, borderRadius: 5, flexShrink: 0,
+                        background: isActive ? pl.color : `${pl.color}33`,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontSize: 8, fontWeight: 800,
+                        color: isActive ? '#fff' : pl.color,
+                      }}>{pl.icon}</div>
+                      {/* Username */}
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{
+                          fontSize: 12, fontWeight: isActive ? 700 : 400,
+                          color: isActive ? C.text : C.sub,
+                          overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                        }}>{acc.username}</div>
+                        {/* Point statut */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+                          <div style={{ width: 4, height: 4, borderRadius: '50%', background: st2.color }}/>
+                          <span style={{ fontSize: 9, color: st2.color }}>{st2.label}</span>
                         </div>
                       </div>
                     </button>
