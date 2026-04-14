@@ -174,7 +174,7 @@ export default function Comptes({ isAdmin = false, isTL = false }) {
       </div>
 
       {/* Detail */}
-      <div style={{ flex: 1 }}>
+      <div style={{ flex: 1, maxWidth: 680 }}>
         {!selAcc
           ? <EmptyState icon="◉" title="Sélectionne un compte" sub="← ou ajoutes-en un nouveau"/>
           : (
