@@ -54,10 +54,16 @@ export default function Comptes({ isAdmin = false, isTL = false }) {
   function openEdit(acc) { setEditAcc(acc); setForm({ ...acc }); setAddOpen(true) }
 
   async function saveAccount() {
+    const clean = {
+      ...form,
+      date_creation: form.date_creation || null,
+      model_id: form.model_id || null,
+      va_id: form.va_id || null,
+    }
     if (editAcc) {
-      await upsert('accounts', { ...editAcc, ...form }, 'accounts')
+      await upsert('accounts', { ...editAcc, ...clean }, 'accounts')
     } else {
-      await insert('accounts', { ...form, id: `acc_${Date.now()}` }, 'accounts')
+      await insert('accounts', { ...clean, id: `acc_${Date.now()}` }, 'accounts')
     }
     setAddOpen(false)
   }
