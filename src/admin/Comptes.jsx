@@ -75,6 +75,18 @@ export default function Comptes({ isAdmin = false, isTL = false }) {
     }
   }
 
+  async function archiveAccount(id) {
+    const acc = accounts.find(a => a.id === id)
+    if (!acc) return
+    await upsert('accounts', { ...acc, statut: 'archive' }, 'accounts')
+  }
+
+  async function unarchiveAccount(id) {
+    const acc = accounts.find(a => a.id === id)
+    if (!acc) return
+    await upsert('accounts', { ...acc, statut: 'actif' }, 'accounts')
+  }
+
   async function addStat() {
     const entry = { id: `stat_${Date.now()}`, account_id: selId, date: newStat.date, vues: Number(newStat.vues), interactions: Number(newStat.interactions), followers: Number(newStat.followers) }
     await insert('account_stats', entry, 'accountStats')
@@ -161,6 +173,10 @@ export default function Comptes({ isAdmin = false, isTL = false }) {
                 {(isAdmin || selAcc.va_id === profile?.id) && (
                   <div style={st.row}>
                     <button style={st.btn('ghost', 'sm')} onClick={() => openEdit(selAcc)}>✏ Modifier</button>
+                    {selAcc.statut !== 'archive'
+                      ? <button style={st.btn('ghost', 'sm')} onClick={() => archiveAccount(selAcc.id)}>📦 Archiver</button>
+                      : <button style={st.btn('green', 'sm')} onClick={() => unarchiveAccount(selAcc.id)}>↩ Restaurer</button>
+                    }
                     {isAdmin && <button style={st.btn('danger', 'sm')} onClick={() => deleteAccount(selAcc.id)}>✕</button>}
                   </div>
                 )}
