@@ -16,6 +16,7 @@ export default function Comptes({ isAdmin = false, isTL = false }) {
   const [showArchives, setShowArchives] = useState(false)
   const [filterModel, setFilterModel] = useState('all')
   const [filterVA, setFilterVA] = useState('all')
+  const [filterPlatform, setFilterPlatform] = useState('all')
 
   if (!data) return null
   const { accounts, accountStats, models, profiles } = data
@@ -39,6 +40,7 @@ export default function Comptes({ isAdmin = false, isTL = false }) {
   const filtered = useMemo(() => {
     let list = showArchives ? archived : active
     if (filterModel !== 'all') list = list.filter(a => a.model_id === filterModel)
+    if (filterPlatform !== 'all') list = list.filter(a => a.platform === filterPlatform)
     if (filterVA !== 'all') list = list.filter(a => a.va_id === filterVA)
     return list
   }, [showArchives, archived, active, filterModel, filterVA])
@@ -173,8 +175,63 @@ export default function Comptes({ isAdmin = false, isTL = false }) {
         </div>
       </div>
 
-      {/* Detail */}
-      <div style={{ flex: 1, maxWidth: 680 }}>
+      {/* Main content */}
+      <div style={{ flex: 1, minWidth: 0 }}>
+        {/* Platform tabs */}
+        <div style={{ display: 'flex', gap: 8, marginBottom: 16, flexWrap: 'wrap', alignItems: 'center' }}>
+          {['all', 'instagram', 'tiktok', 'twitter', 'reddit', 'snapchat'].map(p => {
+            const pl = platInfo(p)
+            const count = filtered.filter(a => p === 'all' || a.platform === p).length
+            return (
+              <button key={p} onClick={() => { setFilterPlatform(p); setSelId(null) }} style={{
+                ...st.btn(filterPlatform === p ? 'primary' : 'ghost', 'sm'),
+                background: filterPlatform === p ? (p === 'all' ? C.accent : pl.color) : 'transparent',
+                color: filterPlatform === p ? '#fff' : C.sub,
+                border: filterPlatform === p ? 'none' : `1px solid ${C.border}`,
+              }}>
+                {p === 'all' ? 'Tout' : pl.label} {count > 0 && <span style={{ opacity: 0.7, fontSize: 10 }}>({count})</span>}
+              </button>
+            )
+          })}
+        </div>
+
+        {!selId ? (
+          /* Account grid */
+          filtered.length === 0
+            ? <div style={{ textAlign: 'center', padding: '60px 0', color: C.sub }}><div style={{ fontSize: 32, marginBottom: 12 }}>◉</div><div>Aucun compte</div></div>
+            : <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 12 }}>
+                {filtered.map(acc => {
+                  const pl = platInfo(acc.platform)
+                  const st2 = statInfo(acc.statut)
+                  return (
+                    <div key={acc.id} onClick={() => setSelId(acc.id)} style={{
+                      ...st.card(14), cursor: 'pointer',
+                      border: `1px solid ${C.border}`,
+                      transition: 'border-color 0.15s',
+                    }}
+                    onMouseEnter={e => e.currentTarget.style.borderColor = pl.color + '88'}
+                    onMouseLeave={e => e.currentTarget.style.borderColor = C.border}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
+                        <div style={{ width: 36, height: 36, borderRadius: 9, background: pl.color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 800, color: '#fff', flexShrink: 0 }}>{pl.icon}</div>
+                        <div style={{ minWidth: 0 }}>
+                          <div style={{ fontWeight: 700, fontSize: 13, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{acc.username}</div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                            <div style={{ width: 5, height: 5, borderRadius: '50%', background: st2.color }}/>
+                            <span style={{ fontSize: 10, color: st2.color, fontWeight: 600 }}>{st2.label}</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div style={{ fontSize: 11, color: C.sub }}>
+                        {models.find(m => m.id === acc.model_id)?.name || '—'}
+                        {acc.date_creation && <span style={{ marginLeft: 6 }}>· {new Date(acc.date_creation).toLocaleDateString('fr-FR', {day:'numeric',month:'short'})}</span>}
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+        ) : (
+          /* Account detail */
+          <div style={{ maxWidth: 680 }}>
         {!selAcc
           ? <EmptyState icon="◉" title="Sélectionne un compte" sub="← ou ajoutes-en un nouveau"/>
           : (
@@ -191,6 +248,7 @@ export default function Comptes({ isAdmin = false, isTL = false }) {
                     </div>
                   </div>
                 </div>
+                <button style={{ ...st.btn('ghost', 'sm'), marginRight: 8 }} onClick={() => setSelId(null)}>← Retour</button>
                 {(isAdmin || selAcc.va_id === profile?.id) && (
                   <div style={st.row}>
                     <button style={st.btn('ghost', 'sm')} onClick={() => openEdit(selAcc)}>✏ Modifier</button>
