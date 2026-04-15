@@ -3,7 +3,7 @@ import { useApp } from '../lib/AppContext'
 import { C, st } from '../lib/design'
 import { Modal, EmptyState, Field } from '../components/UI'
 
-const BLANK_PROFILE = { name: '', color: '#C8A96E', age: null, nationalite: '', ville: '', style: '', caractere: '', ton_dms: '', sujets_ok: [], sujets_eviter: [], objectif_mois: '', tags_of: [], notes: '', login_of: '', password_of: '', login_twitter: '', password_twitter: '', admin_notes: '', split_modele: 40, cout_chatting_type: 'pct', cout_chatting_valeur: 22 }
+const BLANK_PROFILE = { name: '', color: '#C8A96E', age: null, nationalite: '', ville: '', style: '', caractere: '', ton_dms: '', sujets_ok: [], sujets_eviter: [], objectif_mois: '', tags_of: [], notes: '', login_of: '', password_of: '', login_mym: '', password_mym: '', admin_notes: '', split_type: 'pct', split_modele: 40, cout_chatting_valeur: 22 }
 
 export default function AdminModeles() {
   const { data, upsert, insert, remove } = useApp()
@@ -57,35 +57,26 @@ export default function AdminModeles() {
   const TABS = [['fiche', 'Fiche'], ['remuneration', 'Rémunération'], ['docs', 'Documents'], ['stats', 'Stats']]
 
   return (
-    <div style={{ display: 'flex', gap: 16 }}>
-      {/* Sidebar modèles */}
-      <div style={{ width: 180, flexShrink: 0 }}>
-        <div style={{ ...st.card(0), overflow: 'hidden' }}>
-          <div style={{ padding: '11px 14px', borderBottom: `1px solid ${C.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div style={st.cTitle}>Modèles</div>
-            <button style={st.btn('primary', 'xs')} onClick={() => setAddModel(true)}>+</button>
-          </div>
-          {models.length === 0
-            ? <div style={{ padding: 16, color: C.muted, fontSize: 12 }}>Aucun modèle</div>
-            : models.map(m => (
-                <button key={m.id} onClick={() => setSelId(m.id)} style={{
-                  width: '100%', textAlign: 'left', background: selId === m.id ? C.accentDim : 'transparent',
-                  border: 'none', borderLeft: selId === m.id ? `2px solid ${m.color || C.accent}` : '2px solid transparent',
-                  padding: '10px 14px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 9,
-                  fontFamily: "'DM Sans', sans-serif",
-                }}>
-                  <div style={{ width: 10, height: 10, borderRadius: '50%', background: m.color || C.accent, flexShrink: 0 }}/>
-                  <span style={{ fontSize: 13, fontWeight: selId === m.id ? 600 : 400, color: selId === m.id ? C.text : C.sub }}>
-                    {m.name}
-                  </span>
-                </button>
-              ))
-          }
-        </div>
+    <div>
+      {/* Top model tabs */}
+      <div style={{ display: 'flex', gap: 8, marginBottom: 16, flexWrap: 'wrap', alignItems: 'center' }}>
+        {models.map(m => (
+          <button key={m.id} onClick={() => setSelId(m.id)} style={{
+            ...st.btn(selId === m.id ? 'primary' : 'ghost', 'sm'),
+            background: selId === m.id ? m.color || C.accent : 'transparent',
+            color: selId === m.id ? '#fff' : C.sub,
+            border: selId === m.id ? 'none' : `1px solid ${C.border}`,
+            display: 'flex', alignItems: 'center', gap: 6,
+          }}>
+            <div style={{ width: 8, height: 8, borderRadius: '50%', background: selId === m.id ? '#fff' : m.color || C.accent }}/>
+            {m.name}
+          </button>
+        ))}
+        <button style={{ ...st.btn('ghost', 'sm'), marginLeft: 'auto' }} onClick={() => setAddModel(true)}>+ Nouveau modèle</button>
       </div>
 
       {/* Detail */}
-      <div style={{ flex: 1 }}>
+      <div>
         {!selModel
           ? <EmptyState icon="◆" title="Sélectionne un modèle" sub="ou crée-en un nouveau"/>
           : (
@@ -161,19 +152,17 @@ export default function AdminModeles() {
               {tab === 'remuneration' && (
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                   <div style={st.card(18)}>
-                    <div style={st.cTitle}>Split modèle</div>
-                    <div style={{ fontSize: 32, fontWeight: 800, color: C.accent, marginBottom: 4 }}>{selModel.split_modele || 40}%</div>
-                    <div style={st.sub}>reversé au modèle sur le CA brut</div>
-                    <div style={{ marginTop: 10, fontSize: 13, color: C.sub }}>
-                      → Agence garde {100 - (selModel.split_modele || 40)}%
+                    <div style={st.cTitle}>Rémunération modèle</div>
+                    <div style={{ fontSize: 28, fontWeight: 800, color: C.accent, marginBottom: 4 }}>
+                      {selModel.split_type === 'fixe' ? `$${selModel.split_modele || 0}` : `${selModel.split_modele || 40}%`}
                     </div>
+                    <div style={st.sub}>{selModel.split_type === 'fixe' ? 'fixe par mois' : 'du CA brut reversé au modèle'}</div>
+                    {selModel.split_type !== 'fixe' && <div style={{ marginTop: 8, fontSize: 13, color: C.sub }}>→ Agence garde {100-(selModel.split_modele||40)}%</div>}
                   </div>
                   <div style={st.card(18)}>
                     <div style={st.cTitle}>Coût chatting</div>
-                    <div style={{ fontSize: 32, fontWeight: 800, color: C.purple, marginBottom: 4 }}>
-                      {selModel.cout_chatting_type === 'pct' ? `${selModel.cout_chatting_valeur || 22}%` : `$${selModel.cout_chatting_valeur || 0}`}
-                    </div>
-                    <div style={st.sub}>{selModel.cout_chatting_type === 'pct' ? 'du CA brut' : 'fixe par mois'}</div>
+                    <div style={{ fontSize: 28, fontWeight: 800, color: C.purple, marginBottom: 4 }}>{selModel.cout_chatting_valeur || 22}%</div>
+                    <div style={st.sub}>du CA brut</div>
                   </div>
                   {revs.length > 0 && (
                     <div style={{ gridColumn: '1/-1', ...st.card(18) }}>
@@ -263,17 +252,17 @@ export default function AdminModeles() {
             <div style={{ gridColumn: '1/-1', paddingTop: 8, borderTop: `1px solid ${C.border}` }}>
               <div style={{ ...st.cTitle, marginBottom: 12 }}>Rémunération</div>
             </div>
-            <Field label="Split modèle (%)">
-              <input type="number" style={st.input} value={form.split_modele ?? 40} onChange={e => f('split_modele', +e.target.value)} min={0} max={100}/>
-            </Field>
-            <Field label="Type coût chatting">
-              <select style={st.input} value={form.cout_chatting_type || 'pct'} onChange={e => f('cout_chatting_type', e.target.value)}>
+            <Field label="Type rémunération modèle">
+              <select style={st.input} value={form.split_type || 'pct'} onChange={e => f('split_type', e.target.value)}>
                 <option value="pct">% du CA brut</option>
                 <option value="fixe">Fixe ($)</option>
               </select>
             </Field>
-            <Field label={form.cout_chatting_type === 'pct' ? 'Chatting (%)' : 'Chatting ($)'}>
-              <input type="number" style={st.input} value={form.cout_chatting_valeur ?? 22} onChange={e => f('cout_chatting_valeur', +e.target.value)} min={0}/>
+            <Field label={form.split_type === 'fixe' ? 'Salaire fixe ($)' : '% reversé au modèle'}>
+              <input type="number" style={st.input} value={form.split_modele ?? 40} onChange={e => f('split_modele', +e.target.value)} min={0} max={form.split_type === 'fixe' ? 99999 : 100}/>
+            </Field>
+            <Field label="Chatting (% du CA)">
+              <input type="number" style={st.input} value={form.cout_chatting_valeur ?? 22} onChange={e => f('cout_chatting_valeur', +e.target.value)} min={0} max={100}/>
             </Field>
 
             {/* Accès */}
@@ -282,8 +271,8 @@ export default function AdminModeles() {
             </div>
             <Field label="Login OF"><input style={st.input} value={form.login_of || ''} onChange={e => f('login_of', e.target.value)}/></Field>
             <Field label="Password OF"><input style={st.input} value={form.password_of || ''} onChange={e => f('password_of', e.target.value)}/></Field>
-            <Field label="Login Twitter"><input style={st.input} value={form.login_twitter || ''} onChange={e => f('login_twitter', e.target.value)}/></Field>
-            <Field label="Password Twitter"><input style={st.input} value={form.password_twitter || ''} onChange={e => f('password_twitter', e.target.value)}/></Field>
+            <Field label="Login MYM"><input style={st.input} value={form.login_mym || ''} onChange={e => f('login_mym', e.target.value)}/></Field>
+            <Field label="Password MYM"><input style={st.input} value={form.password_mym || ''} onChange={e => f('password_mym', e.target.value)}/></Field>
           </div>
           <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 20 }}>
             <button style={st.btn('ghost')} onClick={() => setEditOpen(false)}>Annuler</button>
