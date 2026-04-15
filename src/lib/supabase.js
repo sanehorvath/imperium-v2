@@ -161,15 +161,17 @@ export function calculateModelMarge(model, latestRevenue, vaList, paliers, vaCli
   if (!latestRevenue) return null
 
   const caBrut = latestRevenue.ca || 0
-  const splitPct = model.split_modele || 40
-  const caAgence = caBrut * (1 - splitPct / 100)
-
-  let coutChatting = 0
-  if (model.cout_chatting_type === 'pct') {
-    coutChatting = caBrut * (model.cout_chatting_valeur || 22) / 100
+  // Split modèle : % ou fixe
+  let caAgence = 0
+  if (model.split_type === 'fixe') {
+    caAgence = caBrut - (model.split_modele || 0)
   } else {
-    coutChatting = model.cout_chatting_valeur || 0
+    const splitPct = model.split_modele || 40
+    caAgence = caBrut * (1 - splitPct / 100)
   }
+
+  // Chatting : toujours % du CA brut
+  const coutChatting = caBrut * (model.cout_chatting_valeur || 22) / 100
 
   // VAs assignés à ce modèle
   const assignedVAs = vaList.filter(v =>
