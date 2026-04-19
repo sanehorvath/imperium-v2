@@ -7,10 +7,35 @@ import { Modal, EmptyState, Field } from '../components/UI'
 export function Stories({ isAdmin = false }) {
   const { data, profile, upsert, insert } = useApp()
   const [selModelId, setSelModelId] = useState(null)
+  const [weekOffset, setWeekOffset] = useState(0) // 0 = current week, -1 = last week, etc.
+
+  function getWeekLabel(offset) {
+    const d = new Date()
+    d.setDate(d.getDate() + offset * 7)
+    const monday = new Date(d)
+    monday.setDate(d.getDate() - (d.getDay() === 0 ? 6 : d.getDay() - 1))
+    const sunday = new Date(monday)
+    sunday.setDate(monday.getDate() + 6)
+    const fmt = date => date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })
+    return offset === 0 ? 'Cette semaine' : `${fmt(monday)} – ${fmt(sunday)}`
+  }
   const [editNarr, setEditNarr] = useState(false)
   const [narr, setNarr] = useState('')
   const [dayModal, setDayModal] = useState(null)
   const [form, setForm] = useState({ title: '', type: 'story', heure: '', note: '', drive: '' })
+  const [weekOffset, setWeekOffset] = useState(0) // 0 = semaine actuelle, -1 = semaine précédente, etc.
+
+  // Calcul de la semaine affichée
+  const weekLabel = React.useMemo(() => {
+    const d = new Date()
+    d.setDate(d.getDate() + weekOffset * 7)
+    const monday = new Date(d)
+    monday.setDate(d.getDate() - ((d.getDay() + 6) % 7))
+    const sunday = new Date(monday)
+    sunday.setDate(monday.getDate() + 6)
+    const fmt = (dt) => dt.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })
+    return `${fmt(monday)} – ${fmt(sunday)}`
+  }, [weekOffset])
 
   if (!data) return null
   const { models, stories, storyDays, storyItems } = data
@@ -68,6 +93,24 @@ export function Stories({ isAdmin = false }) {
 
   return (
     <div>
+      {/* Week selector */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+        <button style={st.btn('ghost', 'sm')} onClick={() => setWeekOffset(v => v-1)}>← Précédente</button>
+        <div style={{ fontWeight: 700, fontSize: 14, color: C.accent, minWidth: 180, textAlign: 'center' }}>{weekLabel}</div>
+        <button style={{ ...st.btn('ghost', 'sm'), opacity: weekOffset >= 0 ? 0.3 : 1 }} onClick={() => setWeekOffset(v => Math.min(0, v+1))} disabled={weekOffset >= 0}>Suivante →</button>
+        {weekOffset !== 0 && <button style={st.btn('primary', 'sm')} onClick={() => setWeekOffset(0)}>Cette semaine</button>}
+      </div>
+
+      {/* Week selector */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
+        <button style={st.btn('ghost', 'sm')} onClick={() => setWeekOffset(w => w - 1)}>←</button>
+        <div style={{ ...st.card(10), minWidth: 200, textAlign: 'center', fontWeight: 600, fontSize: 13 }}>
+          {getWeekLabel(weekOffset)}
+        </div>
+        <button style={{ ...st.btn('ghost', 'sm'), opacity: weekOffset >= 0 ? 0.3 : 1 }} onClick={() => setWeekOffset(w => Math.min(0, w + 1))} disabled={weekOffset >= 0}>→</button>
+        {weekOffset !== 0 && <button style={st.btn('primary', 'xs')} onClick={() => setWeekOffset(0)}>Aujourd'hui</button>}
+      </div>
+
       {/* Model tabs */}
       <div style={{ display: 'flex', gap: 7, marginBottom: 16, flexWrap: 'wrap' }}>
         {visible.map(m => (
