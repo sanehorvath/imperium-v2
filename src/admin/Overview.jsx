@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react'
 import { useApp } from '../lib/AppContext'
-import { calculateModelMarge } from '../lib/supabase'
+import { calculateModelMarge, calculateVAPay } from '../lib/supabase'
 import { C, st } from '../lib/design'
 import { StatCard, EmptyState } from '../components/UI'
 
@@ -14,7 +14,7 @@ export default function Overview() {
 
   if (!data) return null
   const { models, modelRevenue, profiles, paliers, vaClicks, invoices } = data
-  const vas = profiles.filter(p => p.role === 'va')
+  const vas = profiles.filter(p => p.role === 'va' || p.role === 'tl')
   const now = new Date()
 
   const range = useMemo(() => {
@@ -24,27 +24,55 @@ export default function Overview() {
     return { from: dateFrom, to: dateTo }
   }, [period, dateFrom, dateTo])
 
-  const inRange = d => d >= range.from && d <= range.to
+  const inRange = d => d && d >= range.from && d <= range.to
 
   const filteredRev = modelRevenue.filter(r => inRange(r.date))
-  const filteredClics = vaClicks.filter(c => inRange(c.date))
-  const currentMonth = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`
-  const vaClicksThisMonth = vaClicks.filter(c => c.date?.startsWith(currentMonth))
 
+  // CA total
   const totalCA = filteredRev.reduce((a, r) => a + (Number(r.ca)||0), 0)
   const totalFans = filteredRev.reduce((a, r) => a + (Number(r.nouveaux_fans)||0), 0)
   const totalClics = filteredRev.reduce((a, r) => a + (Number(r.clics_total)||0), 0)
 
-  const latestRevByModel = useMemo(() => Object.fromEntries(models.map(m => {
-    const revs = filteredRev.filter(r => r.model_id === m.id).sort((a,b) => b.date?.localeCompare(a.date))
-    return [m.id, revs[0] || null]
-  })), [models, filteredRev])
+  // Charges modèles (split)
+  const totalSplitModele = models.reduce((a, m) => {
+    const revs = filteredRev.filter(r => r.model_id === m.id)
+    const ca = revs.reduce((b, r) => b + (Number(r.ca)||0), 0)
+    if (m.split_type === 'fixe') {
+      // Fixe par mois : compter combien de mois dans la période
+      const days = Math.max(1, (new Date(range.to) - new Date(range.from)) / (1000*60*60*24))
+      const months = Math.max(1, Math.round(days / 30))
+      return a + (Number(m.split_modele)||0) * months
+    }
+    return a + ca * ((Number(m.split_modele)||40) / 100)
+  }, 0)
 
-  const marges = models.map(m => calculateModelMarge(m, latestRevByModel[m.id], vas, paliers, vaClicksThisMonth)).filter(Boolean)
-  const totalNet = marges.reduce((a, mg) => a + mg.net, 0)
+  // Charges chatting
+  const totalChatting = models.reduce((a, m) => {
+    const ca = filteredRev.filter(r => r.model_id === m.id).reduce((b, r) => b + (Number(r.ca)||0), 0)
+    return a + ca * ((Number(m.cout_chatting_valeur)||22) / 100)
+  }, 0)
+
+  // Charges VAs
+  const filteredClics = vaClicks.filter(c => inRange(c.date))
+  const totalVAPay = vas.reduce((a, va) => {
+    const pay = calculateVAPay(va, paliers, filteredClics)
+    if (pay.type === 'pct') {
+      const assignedIds = Array.isArray(va.model_ids) ? va.model_ids : []
+      const ca = assignedIds.reduce((b, mid) => b + filteredRev.filter(r => r.model_id === mid).reduce((c2, r) => c2 + (Number(r.ca)||0), 0), 0)
+      return a + ca * ((Number(va.pay_pct)||0) / 100)
+    }
+    return a + (pay.montant || 0)
+  }, 0)
+
+  // Factures payées dans la période (date_paiement dans range)
+  const facturesPeriode = invoices.filter(i => i.statut === 'payé' && inRange(i.date_paiement))
+  const totalFactures = facturesPeriode.reduce((a, i) => a + (Number(i.montant)||0), 0)
+
+  const totalCharges = totalSplitModele + totalChatting + totalVAPay + totalFactures
+  const netAgence = totalCA - totalCharges
+  const marge = totalCA > 0 ? Math.round((netAgence / totalCA) * 100) : 0
+
   const enRetard = invoices.filter(i => i.statut === 'en_retard')
-  const facturesOuvertes = invoices.filter(i => i.statut !== 'payé')
-  const noData = totalCA === 0
 
   return (
     <div>
@@ -63,16 +91,32 @@ export default function Overview() {
       </div>
 
       {/* KPIs */}
-      <div style={{ ...st.g4, marginBottom: 20 }}>
-        <StatCard label="CA Total" value={noData ? '—' : `$${totalCA.toLocaleString()}`} sub="tous modèles" color={C.accent} icon="💵"/>
-        <StatCard label="Nouveaux fans" value={noData ? '—' : totalFans.toLocaleString()} sub="période sélectionnée" color={C.blue} icon="👥"/>
-        <StatCard label="Clics totaux" value={noData ? '—' : totalClics.toLocaleString()} sub="tous comptes" color={C.purple} icon="🖱️"/>
-        <StatCard label="Net agence" value={noData ? '—' : `$${Math.round(totalNet).toLocaleString()}`} sub="après charges" color={totalNet > 0 ? C.green : C.red} icon="📈"/>
+      <div style={{ ...st.g4, marginBottom: 16 }}>
+        <StatCard label="CA Total" value={totalCA > 0 ? `$${totalCA.toLocaleString()}` : '—'} sub="tous modèles" color={C.accent} icon="💵"/>
+        <StatCard label="Total charges" value={totalCharges > 0 ? `$${Math.round(totalCharges).toLocaleString()}` : '—'} sub="modèles + chatting + VAs + factures" color={C.red} icon="📤"/>
+        <StatCard label="Net agence" value={`$${Math.round(netAgence).toLocaleString()}`} sub="après toutes charges" color={netAgence >= 0 ? C.green : C.red} icon="💰"/>
+        <StatCard label="Marge" value={totalCA > 0 ? `${marge}%` : '—'} sub="net / CA brut" color={marge > 20 ? C.green : marge > 0 ? C.orange : C.red} icon="📈"/>
+      </div>
+
+      {/* Charges detail */}
+      <div style={{ ...st.card(14), marginBottom: 16, display: 'flex', gap: 20, flexWrap: 'wrap' }}>
+        {[
+          { label: 'Modèles', value: totalSplitModele, color: C.orange },
+          { label: 'Chatting', value: totalChatting, color: C.purple },
+          { label: 'VAs', value: totalVAPay, color: C.blue },
+          { label: 'Factures', value: totalFactures, color: C.red },
+        ].map(({ label, value, color }) => (
+          <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <div style={{ width: 8, height: 8, borderRadius: '50%', background: color }}/>
+            <span style={{ fontSize: 12, color: C.sub }}>{label}</span>
+            <span style={{ fontSize: 13, fontWeight: 700, color }}>${Math.round(value).toLocaleString()}</span>
+          </div>
+        ))}
       </div>
 
       {enRetard.length > 0 && (
         <div style={{ background: C.redDim, border: `1px solid ${C.red}44`, borderRadius: 10, padding: '10px 16px', marginBottom: 16, display: 'flex', gap: 10, alignItems: 'center' }}>
-          <span style={{ fontSize: 16 }}>⚠</span>
+          <span>⚠</span>
           <span style={{ fontSize: 13, color: C.red, fontWeight: 600 }}>{enRetard.length} facture{enRetard.length > 1 ? 's' : ''} en retard — {enRetard.map(i => i.libelle).join(', ')}</span>
         </div>
       )}
@@ -83,37 +127,54 @@ export default function Overview() {
           {models.length === 0
             ? <EmptyState icon="📊" title="Aucun modèle"/>
             : models.map((m, i) => {
-                const rev = latestRevByModel[m.id]
-                const mg = calculateModelMarge(m, rev, vas, paliers, vaClicksThisMonth)
+                const ca = filteredRev.filter(r => r.model_id === m.id).reduce((a,r) => a+(Number(r.ca)||0), 0)
+                const fans = filteredRev.filter(r => r.model_id === m.id).reduce((a,r) => a+(Number(r.nouveaux_fans)||0), 0)
+                const clics = filteredRev.filter(r => r.model_id === m.id).reduce((a,r) => a+(Number(r.clics_total)||0), 0)
                 return (
-                  <div key={m.id} style={{ display: 'grid', gridTemplateColumns: '2fr 1.2fr 1fr 0.8fr', alignItems: 'center', padding: '10px 0', borderBottom: i < models.length-1 ? `1px solid ${C.border}` : 'none', gap: 8 }}>
+                  <div key={m.id} style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr', alignItems: 'center', padding: '9px 0', borderBottom: i < models.length-1 ? `1px solid ${C.border}` : 'none', gap: 8 }}>
                     <div style={st.row}>
-                      <div style={st.avatar(m.color || C.accent)}>{(m.name||'?')[0].toUpperCase()}</div>
+                      <div style={st.avatar(m.color||C.accent)}>{(m.name||'?')[0].toUpperCase()}</div>
                       <span style={{ fontWeight: 600, fontSize: 13 }}>{m.name}</span>
                     </div>
-                    <span style={{ fontWeight: 700, color: rev ? C.accent : C.muted, fontSize: 13 }}>{rev ? `$${(rev.ca||0).toLocaleString()}` : '—'}</span>
-                    <span style={{ color: C.sub, fontSize: 12 }}>{rev ? `+${rev.nouveaux_fans||0}` : '—'}</span>
-                    <span style={{ color: mg ? (mg.marge > 0 ? C.green : C.red) : C.muted, fontSize: 12, fontWeight: 600 }}>{mg ? `${mg.marge}%` : '—'}</span>
+                    <span style={{ fontWeight: 700, color: C.accent, fontSize: 12 }}>${ca.toLocaleString()}</span>
+                    <span style={{ color: C.blue, fontSize: 12 }}>+{fans} fans</span>
+                    <span style={{ color: C.purple, fontSize: 12 }}>{clics.toLocaleString()} clics</span>
                   </div>
                 )
               })
           }
         </div>
+
         <div style={st.card(18)}>
           <div style={st.cTitle}>Clics par modèle</div>
           {models.length === 0
             ? <EmptyState icon="🖱️" title="Aucune donnée"/>
-            : models.map((m, i) => {
-                const clics = filteredRev.filter(r => r.model_id === m.id).reduce((a,r) => a + (Number(r.clics_total)||0), 0)
-                return (
-                  <div key={m.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', borderBottom: i < models.length-1 ? `1px solid ${C.border}` : 'none' }}>
-                    <div style={st.avatar(m.color || C.accent)}>{(m.name||'?')[0].toUpperCase()}</div>
-                    <div style={{ flex: 1 }}><div style={{ fontWeight: 600, fontSize: 13 }}>{m.name}</div></div>
-                    <div style={{ fontWeight: 800, color: C.purple }}>{clics.toLocaleString()}</div>
-                  </div>
-                )
-              })
+            : (() => {
+                const totalC = filteredRev.reduce((a,r) => a+(Number(r.clics_total)||0), 0)
+                return models.map((m, i) => {
+                  const clics = filteredRev.filter(r => r.model_id === m.id).reduce((a,r) => a+(Number(r.clics_total)||0), 0)
+                  const pct = totalC > 0 ? Math.round((clics/totalC)*100) : 0
+                  return (
+                    <div key={m.id} style={{ padding: '8px 0', borderBottom: i < models.length-1 ? `1px solid ${C.border}` : 'none' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                        <div style={st.row}>
+                          <div style={st.avatar(m.color||C.accent)}>{(m.name||'?')[0].toUpperCase()}</div>
+                          <span style={{ fontWeight: 600, fontSize: 13 }}>{m.name}</span>
+                        </div>
+                        <span style={{ fontWeight: 800, color: C.purple }}>{clics.toLocaleString()}</span>
+                      </div>
+                      <div style={{ background: C.border, borderRadius: 99, height: 4, overflow: 'hidden' }}>
+                        <div style={{ width: `${pct}%`, height: '100%', background: m.color||C.purple, borderRadius: 99 }}/>
+                      </div>
+                    </div>
+                  )
+                })
+              })()
           }
+          <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: 10, borderTop: `1px solid ${C.border}`, marginTop: 4 }}>
+            <span style={{ fontSize: 12, color: C.sub }}>Total</span>
+            <span style={{ fontWeight: 800, color: C.purple }}>{totalClics.toLocaleString()}</span>
+          </div>
         </div>
       </div>
     </div>
