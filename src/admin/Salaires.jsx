@@ -1,8 +1,8 @@
 import React, { useState, useMemo } from 'react'
 import { useApp } from '../lib/AppContext'
-import { calculateVAPay, calculateModelMarge } from '../lib/supabase'
+import { calculateVAPay } from '../lib/supabase'
 import { C, st } from '../lib/design'
-import { StatCard, EmptyState } from '../components/UI'
+import { EmptyState } from '../components/UI'
 
 const PERIODS = [['month', 'Ce mois'], ['week', '7 jours'], ['day', "Aujourd'hui"], ['custom', 'Personnalisé']]
 
@@ -13,9 +13,8 @@ export default function Salaires() {
   const [dateTo, setDateTo] = useState(() => new Date().toISOString().slice(0,10))
 
   if (!data) return null
-  const { models, modelRevenue, profiles, paliers, vaClicks, payroll } = data
+  const { models, modelRevenue, profiles, paliers, vaClicks } = data
   const vas = profiles.filter(p => p.role === 'va' || p.role === 'tl')
-  const admins = profiles.filter(p => p.role === 'admin' || p.role === 'owner')
   const now = new Date()
 
   const range = useMemo(() => {
@@ -25,43 +24,44 @@ export default function Salaires() {
     return { from: dateFrom, to: dateTo }
   }, [period, dateFrom, dateTo])
 
-  const inRange = d => d >= range.from && d <= range.to
+  const inRange = d => d && d >= range.from && d <= range.to
   const filteredRev = modelRevenue.filter(r => inRange(r.date))
   const filteredClics = vaClicks.filter(c => inRange(c.date))
 
-  const latestRevByModel = useMemo(() => Object.fromEntries(models.map(m => {
-    const revs = filteredRev.filter(r => r.model_id === m.id).sort((a,b) => b.date?.localeCompare(a.date))
-    return [m.id, revs[0] || null]
-  })), [models, filteredRev])
+  // --- MODÈLES ---
+  const modelCosts = models.map(m => {
+    const ca = filteredRev.filter(r => r.model_id === m.id).reduce((a,r) => a+(Number(r.ca)||0), 0)
+    const chatting = ca * ((Number(m.cout_chatting_valeur)||22) / 100)
+    let salaire = 0
+    if (m.split_type === 'fixe') {
+      const days = Math.max(1, (new Date(range.to) - new Date(range.from)) / (1000*60*60*24))
+      const months = Math.max(1, Math.round(days / 30))
+      salaire = (Number(m.split_modele)||0) * months
+    } else {
+      salaire = ca * ((Number(m.split_modele)||40) / 100)
+    }
+    return { model: m, ca, salaire, chatting }
+  })
 
-  const totalCA = filteredRev.reduce((a, r) => a + (Number(r.ca)||0), 0)
+  const totalSalairesModeles = modelCosts.reduce((a, m) => a + m.salaire, 0)
+  const totalChatting = modelCosts.reduce((a, m) => a + m.chatting, 0)
 
-  const vaPays = useMemo(() => vas.map(va => {
+  // --- VAs ---
+  const vaCosts = vas.map(va => {
     const pay = calculateVAPay(va, paliers, filteredClics)
     let montant = 0
     if (pay.type === 'pct') {
-      const assignedModelIds = Array.isArray(va.model_ids) ? va.model_ids : []
-      const caAssigned = assignedModelIds.reduce((a, mid) => a + filteredRev.filter(r => r.model_id === mid).reduce((b,r) => b + (Number(r.ca)||0), 0), 0)
-      montant = caAssigned * ((va.pay_pct||0) / 100)
+      const assignedIds = Array.isArray(va.model_ids) ? va.model_ids : []
+      const ca = assignedIds.reduce((a, mid) => a + filteredRev.filter(r => r.model_id === mid).reduce((b,r) => b+(Number(r.ca)||0), 0), 0)
+      montant = ca * ((Number(va.pay_pct)||0) / 100)
     } else {
       montant = pay.montant || 0
     }
     return { va, pay, montant }
-  }), [vas, paliers, filteredClics, filteredRev])
+  })
 
-  const totalVAPay = vaPays.reduce((a, v) => a + v.montant, 0)
-
-  const modelBreakdowns = useMemo(() => models.map(m => {
-    const rev = latestRevByModel[m.id]
-    const mg = calculateModelMarge(m, rev, vas, paliers, filteredClics)
-    return { model: m, rev, mg }
-  }), [models, latestRevByModel, vas, paliers, filteredClics])
-
-  const totalChatting = modelBreakdowns.reduce((a, { mg }) => a + (mg?.coutChatting||0), 0)
-  const totalSplitModele = modelBreakdowns.reduce((a, { mg }) => a + (mg ? mg.caBrut - mg.caAgence : 0), 0)
-  const totalAdminPay = admins.reduce((a, adm) => a + Math.round(totalCA * ((adm.pct||0)/100)), 0)
-  const totalCharges = totalVAPay + totalChatting + totalSplitModele + totalAdminPay
-  const netAgence = totalCA - totalCharges
+  const totalVAs = vaCosts.reduce((a, v) => a + v.montant, 0)
+  const totalCharges = totalSalairesModeles + totalChatting + totalVAs
 
   return (
     <div>
@@ -79,89 +79,80 @@ export default function Salaires() {
         )}
       </div>
 
-      <div style={{ ...st.g4, marginBottom: 24 }}>
-        <StatCard label="CA Total" value={`$${totalCA.toLocaleString()}`} color={C.accent} icon="💵"/>
-        <StatCard label="Total charges" value={`$${Math.round(totalCharges).toLocaleString()}`} color={C.red} icon="📤"/>
-        <StatCard label="Net agence" value={`$${Math.round(netAgence).toLocaleString()}`} color={netAgence > 0 ? C.green : C.red} icon="💰"/>
-        <StatCard label="Marge globale" value={totalCA > 0 ? `${Math.round((netAgence/totalCA)*100)}%` : '—'} color={C.blue} icon="📈"/>
+      {/* Big 3 cost KPIs */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14, marginBottom: 20 }}>
+        {[
+          { label: 'Coût modèles', value: totalSalairesModeles, color: C.orange, icon: '◆', sub: 'salaires + splits' },
+          { label: 'Coût chatting', value: totalChatting, color: C.purple, icon: '💬', sub: '% du CA' },
+          { label: 'Coût VAs', value: totalVAs, color: C.blue, icon: '👥', sub: 'paliers + %' },
+        ].map(({ label, value, color, icon, sub }) => (
+          <div key={label} style={{ ...st.card(20), borderLeft: `3px solid ${color}` }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>{icon} {label}</div>
+            <div style={{ fontSize: 32, fontWeight: 800, color, lineHeight: 1.1, marginBottom: 4 }}>${Math.round(value).toLocaleString()}</div>
+            <div style={{ fontSize: 11, color: C.sub }}>{sub}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Total */}
+      <div style={{ ...st.card(16), marginBottom: 20, display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: C.accentDim, borderColor: C.accentGlow }}>
+        <div style={{ fontWeight: 700, fontSize: 15 }}>Total charges</div>
+        <div style={{ fontWeight: 900, fontSize: 22, color: C.accent }}>${Math.round(totalCharges).toLocaleString()}</div>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+        {/* Modèles detail */}
         <div style={st.card(18)}>
-          <div style={st.cTitle}>💅 Paie par modèle</div>
-          {modelBreakdowns.length === 0
+          <div style={st.cTitle}>◆ Détail modèles</div>
+          {modelCosts.length === 0
             ? <EmptyState icon="◆" title="Aucun modèle"/>
-            : modelBreakdowns.map(({ model, rev, mg }) => (
-                <div key={model.id} style={{ marginBottom: 16, paddingBottom: 16, borderBottom: `1px solid ${C.border}` }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-                    <div style={st.avatar(model.color||C.accent)}>{(model.name||'?')[0].toUpperCase()}</div>
-                    <div style={{ fontWeight: 700 }}>{model.name}</div>
-                    <div style={{ marginLeft: 'auto', fontWeight: 800, color: C.accent }}>${(rev?.ca||0).toLocaleString()} CA</div>
-                  </div>
-                  {mg ? (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 5, paddingLeft: 40 }}>
-                      {[
-                        { label: model.split_type === 'fixe' ? `Split modèle (fixe $${model.split_modele})` : `Split modèle (${model.split_modele||40}%)`, value: mg.caBrut - mg.caAgence, color: C.orange },
-                        { label: `Chatting (${model.cout_chatting_valeur||22}%)`, value: mg.coutChatting, color: C.purple },
-                        { label: 'Coût VA', value: mg.coutVA, color: C.blue },
-                        { label: 'Net agence', value: mg.net, color: mg.net > 0 ? C.green : C.red, bold: true },
-                      ].map(row => (
-                        <div key={row.label} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12 }}>
-                          <span style={{ color: C.sub }}>{row.label}</span>
-                          <span style={{ color: row.color, fontWeight: row.bold ? 700 : 400 }}>${Math.round(Math.abs(row.value)).toLocaleString()}</span>
-                        </div>
-                      ))}
-                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: C.sub, marginTop: 2 }}>
-                        <span>Marge</span>
-                        <span style={{ color: mg.marge > 0 ? C.green : C.red, fontWeight: 700 }}>{mg.marge}%</span>
-                      </div>
+            : modelCosts.map((mc, i) => (
+                <div key={mc.model.id} style={{ padding: '12px 0', borderBottom: i < modelCosts.length-1 ? `1px solid ${C.border}` : 'none' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                    <div style={st.avatar(mc.model.color||C.accent)}>{(mc.model.name||'?')[0].toUpperCase()}</div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontWeight: 700 }}>{mc.model.name}</div>
+                      <div style={{ fontSize: 11, color: C.sub }}>CA : ${mc.ca.toLocaleString()}</div>
                     </div>
-                  ) : <div style={{ color: C.muted, fontSize: 12, paddingLeft: 40 }}>Pas de données</div>}
+                  </div>
+                  <div style={{ paddingLeft: 40, display: 'flex', flexDirection: 'column', gap: 4 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12 }}>
+                      <span style={{ color: C.sub }}>
+                        {mc.model.split_type === 'fixe' ? `Salaire fixe` : `Split ${mc.model.split_modele||40}%`}
+                      </span>
+                      <span style={{ color: C.orange, fontWeight: 600 }}>${Math.round(mc.salaire).toLocaleString()}</span>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12 }}>
+                      <span style={{ color: C.sub }}>Chatting {mc.model.cout_chatting_valeur||22}%</span>
+                      <span style={{ color: C.purple, fontWeight: 600 }}>${Math.round(mc.chatting).toLocaleString()}</span>
+                    </div>
+                  </div>
                 </div>
               ))
           }
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-          <div style={st.card(18)}>
-            <div style={st.cTitle}>👥 Paie VAs</div>
-            {vaPays.length === 0
-              ? <EmptyState icon="👤" title="Aucun VA"/>
-              : vaPays.map(({ va, pay, montant }) => (
-                  <div key={va.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', borderBottom: `1px solid ${C.border}` }}>
-                    <div style={st.avatar(C.blue)}>{(va.name||'?')[0].toUpperCase()}</div>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontWeight: 600, fontSize: 13 }}>{va.name}</div>
-                      <div style={st.sub}>{pay.type === 'pct' ? `${va.pay_pct}% du CA` : `${(pay.clics||0).toLocaleString()} clics`}</div>
+        {/* VAs detail */}
+        <div style={st.card(18)}>
+          <div style={st.cTitle}>👥 Détail VAs</div>
+          {vaCosts.length === 0
+            ? <EmptyState icon="👤" title="Aucun VA"/>
+            : vaCosts.map(({ va, pay, montant }, i) => (
+                <div key={va.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 0', borderBottom: i < vaCosts.length-1 ? `1px solid ${C.border}` : 'none' }}>
+                  <div style={st.avatar(C.blue)}>{(va.name||'?')[0].toUpperCase()}</div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontWeight: 600, fontSize: 13 }}>{va.name}</div>
+                    <div style={{ fontSize: 11, color: C.sub }}>
+                      {pay.type === 'pct' ? `${va.pay_pct}% du CA` : `${(pay.clics||0).toLocaleString()} clics · ${pay.palier?.label || 'Hors palier'}`}
                     </div>
-                    <div style={{ fontWeight: 800, color: C.green, fontSize: 15 }}>${Math.round(montant).toLocaleString()}</div>
                   </div>
-                ))
-            }
-            <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: 12, borderTop: `1px solid ${C.border}` }}>
-              <span style={{ fontWeight: 700 }}>Total VAs</span>
-              <span style={{ fontWeight: 800, color: C.accent }}>${Math.round(totalVAPay).toLocaleString()}</span>
-            </div>
-          </div>
-
-          <div style={{ ...st.card(18), background: C.accentDim, borderColor: C.accentGlow }}>
-            <div style={st.cTitle}>📊 Résumé</div>
-            {[
-              { label: 'CA brut', value: totalCA, color: C.text },
-              { label: 'Split modèles', value: -totalSplitModele, color: C.orange },
-              { label: 'Chatting', value: -totalChatting, color: C.purple },
-              { label: 'Paie VAs', value: -totalVAPay, color: C.blue },
-              { label: 'Paie admins', value: -totalAdminPay, color: C.accent },
-            ].map(row => (
-              <div key={row.label} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6, fontSize: 13 }}>
-                <span style={{ color: C.sub }}>{row.label}</span>
-                <span style={{ color: row.color, fontWeight: 600 }}>{row.value >= 0 ? '+' : ''}${Math.round(row.value).toLocaleString()}</span>
-              </div>
-            ))}
-            <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: 10, marginTop: 6, borderTop: `1px solid ${C.accentGlow}`, fontSize: 15, fontWeight: 800 }}>
-              <span>NET AGENCE</span>
-              <span style={{ color: netAgence > 0 ? C.green : C.red }}>${Math.round(netAgence).toLocaleString()}</span>
-            </div>
+                  <div style={{ fontWeight: 800, color: C.blue, fontSize: 16 }}>${Math.round(montant).toLocaleString()}</div>
+                </div>
+              ))
+          }
+          <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: 12, marginTop: 4, borderTop: `1px solid ${C.border}`, fontWeight: 700 }}>
+            <span>Total VAs</span>
+            <span style={{ color: C.blue }}>${Math.round(totalVAs).toLocaleString()}</span>
           </div>
         </div>
       </div>
