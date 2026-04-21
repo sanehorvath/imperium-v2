@@ -9,16 +9,6 @@
   status = 200
 
 [[redirects]]
-  from = "/dashboard-founder"
-  to = "/dashboard-founder.html"
-  status = 200
-
-[[redirects]]
-  from = "/dashboard-commercial"
-  to = "/dashboard-commercial.html"
-  status = 200
-
-[[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
