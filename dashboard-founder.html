@@ -8,20 +8,18 @@
 <link rel="stylesheet" href="css/dashboard.css"/>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
-<!-- Chargés synchrones → disponibles immédiatement dans le HTML -->
+<!-- data.js et utils.js chargés synchrones : toutes les fonctions dispo avant le HTML -->
 <script src="js/data.js"></script>
 <script src="js/utils.js"></script>
-<!-- Supabase (requis pour le module recrutement) -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-<!-- Config Supabase — à remplir après avoir configuré votre projet -->
+<!-- Config Supabase — remplacer par vos vraies valeurs -->
 <script>
-const SUPABASE_URL = 'VOTRE_SUPABASE_URL';
-const SUPABASE_KEY = 'VOTRE_SUPABASE_ANON_KEY';
+var SUPABASE_URL = 'VOTRE_SUPABASE_URL';
+var SUPABASE_KEY = 'VOTRE_SUPABASE_ANON_KEY';
 </script>
 <script>
-// Auth immédiate — avant tout rendu HTML
+// Vérification auth avant rendu
 (function(){
-  const u = getCurrentUser();
+  var u = getCurrentUser();
   if (!u || u.role !== 'founder') { window.location.href = 'index.html'; }
 })();
 </script>
@@ -29,7 +27,7 @@ const SUPABASE_KEY = 'VOTRE_SUPABASE_ANON_KEY';
 <body>
 <div class="dash">
 
-  <!-- ══ SIDEBAR ══════════════════════════════════════════ -->
+  <!-- SIDEBAR -->
   <aside class="sidebar">
     <div class="sb-logo">
       <div class="sb-logo-icon">☀️</div>
@@ -40,39 +38,43 @@ const SUPABASE_KEY = 'VOTRE_SUPABASE_ANON_KEY';
     </div>
     <nav class="sb-nav">
       <div class="nav-group">Principal</div>
-      <div class="nav-item active" id="ni-overview"   onclick="goView('overview')">  <span class="nav-icon">📊</span> Dashboard</div>
-      <div class="nav-item"        id="ni-objectives" onclick="goView('objectives')"><span class="nav-icon">🎯</span> Objectifs</div>
-      <div class="nav-item"        id="ni-tasks"      onclick="goView('tasks')">     <span class="nav-icon">✅</span> Tâches</div>
-      <div class="nav-item"        id="ni-calendar"   onclick="goView('calendar')">  <span class="nav-icon">📅</span> Calendrier</div>
+      <div class="nav-item active" id="ni-overview"    onclick="goView('overview')">   <span class="nav-icon">📊</span> Dashboard</div>
+      <div class="nav-item"        id="ni-objectives"  onclick="goView('objectives')"> <span class="nav-icon">🎯</span> Objectifs</div>
+      <div class="nav-item"        id="ni-tasks"       onclick="goView('tasks')">      <span class="nav-icon">✅</span> Tâches</div>
+      <div class="nav-item"        id="ni-calendar"    onclick="goView('calendar')">   <span class="nav-icon">📅</span> Calendrier</div>
       <div class="nav-group">CRM</div>
-      <div class="nav-item"        id="ni-clients"    onclick="goView('clients')">   <span class="nav-icon">🤝</span> Clients</div>
-      <div class="nav-item"        id="ni-suppliers"  onclick="goView('suppliers')"> <span class="nav-icon">🏭</span> Fournisseurs</div>
+      <div class="nav-item"        id="ni-clients"     onclick="goView('clients')">    <span class="nav-icon">🤝</span> Clients</div>
+      <div class="nav-item"        id="ni-suppliers"   onclick="goView('suppliers')">  <span class="nav-icon">🏭</span> Fournisseurs</div>
       <div class="nav-group">Finance</div>
-      <div class="nav-item"        id="ni-invoices"   onclick="goView('invoices')">  <span class="nav-icon">🧾</span> Facturation</div>
-      <div class="nav-item"        id="ni-budget"     onclick="goView('budget')">    <span class="nav-icon">💰</span> Budget</div>
-      <div class="nav-item"        id="ni-calculator" onclick="goView('calculator')"><span class="nav-icon">🔢</span> Calculateur</div>
+      <div class="nav-item"        id="ni-invoices"    onclick="goView('invoices')">   <span class="nav-icon">🧾</span> Facturation</div>
+      <div class="nav-item"        id="ni-budget"      onclick="goView('budget')">     <span class="nav-icon">💰</span> Budget</div>
+      <div class="nav-item"        id="ni-calculator"  onclick="goView('calculator')"> <span class="nav-icon">🔢</span> Calculateur</div>
       <div class="nav-group">RH</div>
       <div class="nav-item"        id="ni-recrutement" onclick="goView('recrutement')"><span class="nav-icon">👥</span> Recrutement</div>
       <div class="nav-group">Communication</div>
-      <div class="nav-item"        id="ni-messages"   onclick="goView('messages')">  <span class="nav-icon">💬</span> Messagerie</div>
+      <div class="nav-item"        id="ni-messages"    onclick="goView('messages')">   <span class="nav-icon">💬</span> Messagerie</div>
     </nav>
     <div class="sb-foot">
       <div class="user-pill">
         <div class="user-av" id="u-av">SA</div>
-        <div><div class="user-name" id="u-name">Sane</div><div class="user-role">Founder</div></div>
+        <div>
+          <div class="user-name" id="u-name">Sane</div>
+          <div class="user-role">Founder</div>
+        </div>
       </div>
     </div>
   </aside>
 
-  <!-- ══ MAIN ═════════════════════════════════════════════ -->
+  <!-- MAIN -->
   <div class="main-area">
     <div class="topbar">
       <div class="topbar-title" id="topbar-title">Dashboard</div>
       <div class="topbar-right">
         <button class="theme-toggle" onclick="toggleTheme()">☀️</button>
-        <button class="logout-btn"   onclick="doLogout()">Déconnexion</button>
+        <button class="logout-btn" onclick="doLogout()">Déconnexion</button>
       </div>
     </div>
+
     <div class="content">
 
       <!-- OVERVIEW -->
@@ -124,60 +126,84 @@ const SUPABASE_KEY = 'VOTRE_SUPABASE_ANON_KEY';
   </div>
 </div>
 
-<!-- modules.js chargé à la fin du body -->
+<!-- ═══════════════════════════════════════════════════════
+     SCRIPTS — chargés en fin de body dans le bon ordre :
+     1. Supabase CDN
+     2. modules.js
+     3. recrutement.js
+     4. logique inline
+════════════════════════════════════════════════════════ -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="js/modules.js"></script>
 <script src="js/recrutement.js"></script>
 <script>
-const VIEWS_F = ['overview','objectives','tasks','calendar','clients','suppliers','invoices','budget','calculator','recrutement','messages'];
-const VIEW_TITLES = {overview:'Dashboard',objectives:'Objectifs',tasks:'Tâches',calendar:'Calendrier',clients:'Clients',suppliers:'Fournisseurs',invoices:'Facturation',budget:'Budget',calculator:'Calculateur',recrutement:'Recrutement',messages:'Messagerie'};
+var VIEWS_F = ['overview','objectives','tasks','calendar','clients','suppliers','invoices','budget','calculator','recrutement','messages'];
+var VIEW_TITLES = {
+  overview:'Dashboard', objectives:'Objectifs', tasks:'Tâches',
+  calendar:'Calendrier', clients:'Clients', suppliers:'Fournisseurs',
+  invoices:'Facturation', budget:'Budget', calculator:'Calculateur',
+  recrutement:'Recrutement', messages:'Messagerie'
+};
 
 function goView(name) {
-  VIEWS_F.forEach(v => {
-    document.getElementById('view-'+v)?.classList.toggle('active', v===name);
-    document.getElementById('ni-'+v)?.classList.toggle('active', v===name);
+  VIEWS_F.forEach(function(v) {
+    var view = document.getElementById('view-'+v);
+    var nav  = document.getElementById('ni-'+v);
+    if (view) view.classList.toggle('active', v === name);
+    if (nav)  nav.classList.toggle('active',  v === name);
   });
   document.getElementById('topbar-title').textContent = VIEW_TITLES[name] || name;
-  const u = getCurrentUser();
-  if (name==='objectives')  renderObjectives();
-  if (name==='tasks')       renderTasks(u.email, u.role);
-  if (name==='calendar')    renderCalendar(u.email, u.role);
-  if (name==='clients')     renderClients();
-  if (name==='suppliers')   renderSuppliers();
-  if (name==='invoices')    renderInvoices(u.role);
-  if (name==='budget')      renderBudget();
-  if (name==='calculator')  renderCalculator();
-  if (name==='recrutement') renderRecruitment();
-  if (name==='messages')    renderMessages();
+  var u = getCurrentUser();
+  if (name === 'objectives')  renderObjectives();
+  if (name === 'tasks')       renderTasks(u.email, u.role);
+  if (name === 'calendar')    renderCalendar(u.email, u.role);
+  if (name === 'clients')     renderClients();
+  if (name === 'suppliers')   renderSuppliers();
+  if (name === 'invoices')    renderInvoices(u.role);
+  if (name === 'budget')      renderBudget();
+  if (name === 'calculator')  renderCalculator();
+  if (name === 'recrutement') renderRecruitment();
+  if (name === 'messages')    renderMessages();
 }
-function doLogout() { sessionStorage.removeItem('solaire_user'); window.location.href='index.html'; }
 
-// ── Init ─────────────────────────────────────────────────────
+function doLogout() {
+  sessionStorage.removeItem('solaire_user');
+  window.location.href = 'index.html';
+}
+
 document.addEventListener('DOMContentLoaded', function() {
-  const u = getCurrentUser();
+  var u = getCurrentUser();
   if (!u) return;
   document.getElementById('u-av').textContent   = u.initials;
   document.getElementById('u-name').textContent = u.name;
   initTheme();
-  // Remplir overview
-  const active = DEMO_INVOICES.filter(i=>!i.archived);
-  const cours  = active.filter(i=>i.statut==='en cours').reduce((s,i)=>s+i.montant,0);
-  const retard = active.filter(i=>i.statut==='en retard').reduce((s,i)=>s+i.montant,0);
-  const paye   = active.filter(i=>i.statut==='payée').reduce((s,i)=>s+i.montant,0);
+
+  // KPIs overview
+  var active = DEMO_INVOICES.filter(function(i){ return !i.archived; });
+  var cours  = active.filter(function(i){ return i.statut === 'en cours'; }).reduce(function(s,i){ return s+i.montant; }, 0);
+  var retard = active.filter(function(i){ return i.statut === 'en retard'; }).reduce(function(s,i){ return s+i.montant; }, 0);
+  var paye   = active.filter(function(i){ return i.statut === 'payée'; }).reduce(function(s,i){ return s+i.montant; }, 0);
   document.getElementById('ov-cours').textContent  = fmt(cours);
   document.getElementById('ov-retard').textContent = fmt(retard);
   document.getElementById('ov-paye').textContent   = fmt(paye);
-  // Budget T1 restant
-  const eng = budgetFromInvoices(DEMO_INVOICES);
-  const T1pos = BUDGET_POSTES.filter(p=>p.tranche==='T1');
-  const T1bud = T1pos.reduce((s,p)=>s+p.budget,0);
-  const T1eng = T1pos.reduce((s,p)=>s+(eng[p.id]?.engage||0),0);
-  document.getElementById('ov-budget').textContent = fmt(T1bud-T1eng);
-  // Tâches
-  document.getElementById('ov-tasks').innerHTML = DEMO_TASKS.slice(0,5).map(t=>`
-    <div class="ov-row"><span>${t.titre}</span><span style="font-size:11px;color:var(--text2)">${t.statut}</span></div>`).join('');
-  // RDV
-  document.getElementById('ov-rdv').innerHTML = DEMO_APPOINTMENTS.sort((a,b)=>a.date.localeCompare(b.date)).slice(0,4).map(a=>`
-    <div class="ov-row"><span>${a.titre}</span><span style="font-size:11px;color:var(--acc)">${fmtDate(a.date)}</span></div>`).join('');
+
+  // Budget T1
+  var eng    = budgetFromInvoices(DEMO_INVOICES);
+  var T1pos  = BUDGET_POSTES.filter(function(p){ return p.tranche === 'T1'; });
+  var T1bud  = T1pos.reduce(function(s,p){ return s+p.budget; }, 0);
+  var T1eng  = T1pos.reduce(function(s,p){ return s+(eng[p.id] ? eng[p.id].engage : 0); }, 0);
+  document.getElementById('ov-budget').textContent = fmt(T1bud - T1eng);
+
+  // Tâches récentes
+  document.getElementById('ov-tasks').innerHTML = DEMO_TASKS.slice(0,5).map(function(t){
+    return '<div class="ov-row"><span>'+t.titre+'</span><span style="font-size:11px;color:var(--text2)">'+t.statut+'</span></div>';
+  }).join('');
+
+  // Prochains RDV
+  var rdvs = DEMO_APPOINTMENTS.slice().sort(function(a,b){ return a.date.localeCompare(b.date); }).slice(0,4);
+  document.getElementById('ov-rdv').innerHTML = rdvs.map(function(a){
+    return '<div class="ov-row"><span>'+a.titre+'</span><span style="font-size:11px;color:var(--acc)">'+fmtDate(a.date)+'</span></div>';
+  }).join('');
 });
 </script>
 </body>
