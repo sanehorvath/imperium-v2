@@ -18,16 +18,18 @@ import AdminCategories from './AdminCategories'
 import PaliersConfig from './PaliersConfig'
 import Comptes from './Comptes'
 import MonProfil from './MonProfil'
+import Recrutement from './Recrutement'
 
 const NAV_ADMIN = [
   { section: 'Admin', items: [
-    { id: 'overview',    label: 'Vue générale',   icon: '◈' },
-    { id: 'salaires',    label: 'Salaires',        icon: '💰' },
-    { id: 'reporting',   label: 'Reporting',       icon: '📊' },
-    { id: 'facturation', label: 'Facturation',     icon: '◎' },
-    { id: 'equipe',      label: 'Gestion Équipe',  icon: '◐' },
-    { id: 'paliers',     label: 'Paliers & Taux',  icon: '⊟' },
-    { id: 'categories',  label: 'Catégories',      icon: '⊞' },
+    { id: 'overview',     label: 'Vue générale',   icon: '◈' },
+    { id: 'salaires',     label: 'Salaires',        icon: '💰' },
+    { id: 'reporting',    label: 'Reporting',       icon: '📊' },
+    { id: 'facturation',  label: 'Facturation',     icon: '◎' },
+    { id: 'equipe',       label: 'Gestion Équipe',  icon: '◐' },
+    { id: 'paliers',      label: 'Paliers & Taux',  icon: '⊟' },
+    { id: 'categories',   label: 'Catégories',      icon: '⊞' },
+    { id: 'recrutement',  label: 'Recrutement',     icon: '👥' },
   ]},
   { section: 'Contenu', items: [
     { id: 'comptes',     label: 'Comptes',         icon: '◉' },
@@ -59,20 +61,21 @@ export default function AdminApp() {
     const props = { data, isAdmin: true }
 
     switch (page) {
-      case 'overview':    return <Overview />
-      case 'salaires':    return <Salaires />
-      case 'reporting':   return <Reporting />
-      case 'facturation': return <Facturation />
-      case 'equipe':      return <GestionEquipe />
-      case 'paliers':     return <PaliersConfig />
-      case 'categories':  return <AdminCategories />
-      case 'comptes':     return <Comptes isAdmin={true} />
-      case 'modeles':     return <AdminModeles />
-      case 'media':       return <MediaLibrary isAdmin={true} />
-      case 'formation':   return <Formation isAdmin={true} />
-      case 'stories':     return <Stories isAdmin={true} />
-      case 'mon_profil':  return <MonProfil />
-      default:            return <Overview />
+      case 'overview':     return <Overview />
+      case 'salaires':     return <Salaires />
+      case 'reporting':    return <Reporting />
+      case 'facturation':  return <Facturation />
+      case 'equipe':       return <GestionEquipe />
+      case 'paliers':      return <PaliersConfig />
+      case 'categories':   return <AdminCategories />
+      case 'recrutement':  return <Recrutement />
+      case 'comptes':      return <Comptes isAdmin={true} />
+      case 'modeles':      return <AdminModeles />
+      case 'media':        return <MediaLibrary isAdmin={true} />
+      case 'formation':    return <Formation isAdmin={true} />
+      case 'stories':      return <Stories isAdmin={true} />
+      case 'mon_profil':   return <MonProfil />
+      default:             return <Overview />
     }
   }
 
