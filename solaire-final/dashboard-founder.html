@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Solaire — Founder</title>
+<link rel="stylesheet" href="css/style.css"/>
+<link rel="stylesheet" href="css/dashboard.css"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<!-- data.js et utils.js chargés synchrones : toutes les fonctions dispo avant le HTML -->
+<script src="js/data.js"></script>
+<script src="js/utils.js"></script>
+<!-- Config Supabase — remplacer par vos vraies valeurs -->
+<script>
+var SUPABASE_URL = 'VOTRE_SUPABASE_URL';
+var SUPABASE_KEY = 'VOTRE_SUPABASE_ANON_KEY';
+</script>
+<script>
+// Vérification auth avant rendu
+(function(){
+  var u = getCurrentUser();
+  if (!u || u.role !== 'founder') { window.location.href = 'index.html'; }
+})();
+</script>
+</head>
+<body>
+<div class="dash">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sb-logo">
+      <div class="sb-logo-icon">☀️</div>
+      <div>
+        <div class="sb-logo-name">Solaire</div>
+        <div class="sb-logo-role">Founder</div>
+      </div>
+    </div>
+    <nav class="sb-nav">
+      <div class="nav-group">Principal</div>
+      <div class="nav-item active" id="ni-overview"    onclick="goView('overview')">   <span class="nav-icon">📊</span> Dashboard</div>
+      <div class="nav-item"        id="ni-objectives"  onclick="goView('objectives')"> <span class="nav-icon">🎯</span> Objectifs</div>
+      <div class="nav-item"        id="ni-tasks"       onclick="goView('tasks')">      <span class="nav-icon">✅</span> Tâches</div>
+      <div class="nav-item"        id="ni-calendar"    onclick="goView('calendar')">   <span class="nav-icon">📅</span> Calendrier</div>
+      <div class="nav-group">CRM</div>
+      <div class="nav-item"        id="ni-clients"     onclick="goView('clients')">    <span class="nav-icon">🤝</span> Clients</div>
+      <div class="nav-item"        id="ni-suppliers"   onclick="goView('suppliers')">  <span class="nav-icon">🏭</span> Fournisseurs</div>
+      <div class="nav-group">Finance</div>
+      <div class="nav-item"        id="ni-invoices"    onclick="goView('invoices')">   <span class="nav-icon">🧾</span> Facturation</div>
+      <div class="nav-item"        id="ni-budget"      onclick="goView('budget')">     <span class="nav-icon">💰</span> Budget</div>
+      <div class="nav-item"        id="ni-calculator"  onclick="goView('calculator')"> <span class="nav-icon">🔢</span> Calculateur</div>
+      <div class="nav-group">RH</div>
+      <div class="nav-item"        id="ni-recrutement" onclick="goView('recrutement')"><span class="nav-icon">👥</span> Recrutement</div>
+      <div class="nav-group">Communication</div>
+      <div class="nav-item"        id="ni-messages"    onclick="goView('messages')">   <span class="nav-icon">💬</span> Messagerie</div>
+    </nav>
+    <div class="sb-foot">
+      <div class="user-pill">
+        <div class="user-av" id="u-av">SA</div>
+        <div>
+          <div class="user-name" id="u-name">Sane</div>
+          <div class="user-role">Founder</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main-area">
+    <div class="topbar">
+      <div class="topbar-title" id="topbar-title">Dashboard</div>
+      <div class="topbar-right">
+        <button class="theme-toggle" onclick="toggleTheme()">☀️</button>
+        <button class="logout-btn" onclick="doLogout()">Déconnexion</button>
+      </div>
+    </div>
+
+    <div class="content">
+
+      <!-- OVERVIEW -->
+      <div class="view active" id="view-overview">
+        <div class="vh"><h2>Dashboard</h2></div>
+        <div class="kpi-row kpi4">
+          <div class="kpi"><div class="kpi-l">Factures en cours</div><div class="kpi-v kpi-blue"  id="ov-cours">–</div></div>
+          <div class="kpi"><div class="kpi-l">En retard</div>        <div class="kpi-v kpi-red"   id="ov-retard">–</div></div>
+          <div class="kpi"><div class="kpi-l">Payé total</div>       <div class="kpi-v kpi-green" id="ov-paye">–</div></div>
+          <div class="kpi"><div class="kpi-l">Budget T1 restant</div><div class="kpi-v kpi-amber" id="ov-budget">–</div></div>
+        </div>
+        <div class="ov-grid">
+          <div class="card"><div class="card-label">Tâches récentes</div><div id="ov-tasks"></div></div>
+          <div class="card"><div class="card-label">Prochains RDV</div><div id="ov-rdv"></div></div>
+        </div>
+      </div>
+
+      <!-- OBJECTIVES -->
+      <div class="view" id="view-objectives"></div>
+
+      <!-- TASKS -->
+      <div class="view" id="view-tasks"></div>
+
+      <!-- CALENDAR -->
+      <div class="view" id="view-calendar"></div>
+
+      <!-- CLIENTS -->
+      <div class="view" id="view-clients"></div>
+
+      <!-- SUPPLIERS -->
+      <div class="view" id="view-suppliers"></div>
+
+      <!-- INVOICES -->
+      <div class="view" id="view-invoices"></div>
+
+      <!-- BUDGET -->
+      <div class="view" id="view-budget"></div>
+
+      <!-- CALCULATOR -->
+      <div class="view" id="view-calculator"></div>
+
+      <!-- RECRUTEMENT -->
+      <div class="view" id="view-recrutement"></div>
+
+      <!-- MESSAGES -->
+      <div class="view" id="view-messages"></div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     SCRIPTS — chargés en fin de body dans le bon ordre :
+     1. Supabase CDN
+     2. modules.js
+     3. recrutement.js
+     4. logique inline
+════════════════════════════════════════════════════════ -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="js/modules.js"></script>
+<script src="js/recrutement.js"></script>
+<script>
+var VIEWS_F = ['overview','objectives','tasks','calendar','clients','suppliers','invoices','budget','calculator','recrutement','messages'];
+var VIEW_TITLES = {
+  overview:'Dashboard', objectives:'Objectifs', tasks:'Tâches',
+  calendar:'Calendrier', clients:'Clients', suppliers:'Fournisseurs',
+  invoices:'Facturation', budget:'Budget', calculator:'Calculateur',
+  recrutement:'Recrutement', messages:'Messagerie'
+};
+
+function goView(name) {
+  VIEWS_F.forEach(function(v) {
+    var view = document.getElementById('view-'+v);
+    var nav  = document.getElementById('ni-'+v);
+    if (view) view.classList.toggle('active', v === name);
+    if (nav)  nav.classList.toggle('active',  v === name);
+  });
+  document.getElementById('topbar-title').textContent = VIEW_TITLES[name] || name;
+  var u = getCurrentUser();
+  if (name === 'objectives')  renderObjectives();
+  if (name === 'tasks')       renderTasks(u.email, u.role);
+  if (name === 'calendar')    renderCalendar(u.email, u.role);
+  if (name === 'clients')     renderClients();
+  if (name === 'suppliers')   renderSuppliers();
+  if (name === 'invoices')    renderInvoices(u.role);
+  if (name === 'budget')      renderBudget();
+  if (name === 'calculator')  renderCalculator();
+  if (name === 'recrutement') renderRecruitment();
+  if (name === 'messages')    renderMessages();
+}
+
+function doLogout() {
+  sessionStorage.removeItem('solaire_user');
+  window.location.href = 'index.html';
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  var u = getCurrentUser();
+  if (!u) return;
+  document.getElementById('u-av').textContent   = u.initials;
+  document.getElementById('u-name').textContent = u.name;
+  initTheme();
+
+  // KPIs overview
+  var active = DEMO_INVOICES.filter(function(i){ return !i.archived; });
+  var cours  = active.filter(function(i){ return i.statut === 'en cours'; }).reduce(function(s,i){ return s+i.montant; }, 0);
+  var retard = active.filter(function(i){ return i.statut === 'en retard'; }).reduce(function(s,i){ return s+i.montant; }, 0);
+  var paye   = active.filter(function(i){ return i.statut === 'payée'; }).reduce(function(s,i){ return s+i.montant; }, 0);
+  document.getElementById('ov-cours').textContent  = fmt(cours);
+  document.getElementById('ov-retard').textContent = fmt(retard);
+  document.getElementById('ov-paye').textContent   = fmt(paye);
+
+  // Budget T1
+  var eng    = budgetFromInvoices(DEMO_INVOICES);
+  var T1pos  = BUDGET_POSTES.filter(function(p){ return p.tranche === 'T1'; });
+  var T1bud  = T1pos.reduce(function(s,p){ return s+p.budget; }, 0);
+  var T1eng  = T1pos.reduce(function(s,p){ return s+(eng[p.id] ? eng[p.id].engage : 0); }, 0);
+  document.getElementById('ov-budget').textContent = fmt(T1bud - T1eng);
+
+  // Tâches récentes
+  document.getElementById('ov-tasks').innerHTML = DEMO_TASKS.slice(0,5).map(function(t){
+    return '<div class="ov-row"><span>'+t.titre+'</span><span style="font-size:11px;color:var(--text2)">'+t.statut+'</span></div>';
+  }).join('');
+
+  // Prochains RDV
+  var rdvs = DEMO_APPOINTMENTS.slice().sort(function(a,b){ return a.date.localeCompare(b.date); }).slice(0,4);
+  document.getElementById('ov-rdv').innerHTML = rdvs.map(function(a){
+    return '<div class="ov-row"><span>'+a.titre+'</span><span style="font-size:11px;color:var(--acc)">'+fmtDate(a.date)+'</span></div>';
+  }).join('');
+});
+</script>
+</body>
+</html>
