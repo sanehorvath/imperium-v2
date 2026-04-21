@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Solaire — Commercial</title>
+<link rel="stylesheet" href="css/style.css"/>
+<link rel="stylesheet" href="css/dashboard.css"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<!-- Chargés synchrones → toujours disponibles -->
+<script src="js/data.js"></script>
+<script src="js/utils.js"></script>
+<script>
+(function(){
+  const u = getCurrentUser();
+  if (!u || u.role !== 'commercial') { window.location.href = 'index.html'; }
+})();
+</script>
+</head>
+<body>
+<div class="dash">
+
+  <!-- ══ SIDEBAR ══════════════════════════════════════════ -->
+  <aside class="sidebar">
+    <div class="sb-logo">
+      <div class="sb-logo-icon">☀️</div>
+      <div>
+        <div class="sb-logo-name">Solaire</div>
+        <div class="sb-logo-role">Commercial</div>
+      </div>
+    </div>
+    <nav class="sb-nav">
+      <div class="nav-group">Principal</div>
+      <div class="nav-item active" id="ni-overview"   onclick="goView('overview')">  <span class="nav-icon">📊</span> Dashboard</div>
+      <div class="nav-item"        id="ni-tasks"      onclick="goView('tasks')">     <span class="nav-icon">✅</span> Tâches</div>
+      <div class="nav-item"        id="ni-calendar"   onclick="goView('calendar')">  <span class="nav-icon">📅</span> Calendrier</div>
+      <div class="nav-group">CRM</div>
+      <div class="nav-item"        id="ni-clients"    onclick="goView('clients')">   <span class="nav-icon">🤝</span> Clients</div>
+      <div class="nav-item"        id="ni-suppliers"  onclick="goView('suppliers')"> <span class="nav-icon">🏭</span> Fournisseurs</div>
+      <div class="nav-group">Finance</div>
+      <div class="nav-item"        id="ni-invoices"   onclick="goView('invoices')">  <span class="nav-icon">🧾</span> Facturation</div>
+      <div class="nav-item"        id="ni-calculator" onclick="goView('calculator')"><span class="nav-icon">🔢</span> Calculateur</div>
+      <div class="nav-group">Communication</div>
+      <div class="nav-item"        id="ni-messages"   onclick="goView('messages')">  <span class="nav-icon">💬</span> Messagerie</div>
+    </nav>
+    <div class="sb-foot">
+      <div class="user-pill">
+        <div class="user-av" id="u-av">LU</div>
+        <div><div class="user-name" id="u-name">Lucas</div><div class="user-role">Commercial</div></div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ══ MAIN ═════════════════════════════════════════════ -->
+  <div class="main-area">
+    <div class="topbar">
+      <div class="topbar-title" id="topbar-title">Dashboard</div>
+      <div class="topbar-right">
+        <button class="theme-toggle" onclick="toggleTheme()">☀️</button>
+        <button class="logout-btn"   onclick="doLogout()">Déconnexion</button>
+      </div>
+    </div>
+    <div class="content">
+
+      <!-- OVERVIEW -->
+      <div class="view active" id="view-overview">
+        <div class="vh"><h2>Dashboard</h2></div>
+        <div class="kpi-row">
+          <div class="kpi"><div class="kpi-l">Mes tâches actives</div><div class="kpi-v kpi-amber" id="ov-tasks-c">–</div></div>
+          <div class="kpi"><div class="kpi-l">Mes RDV à venir</div> <div class="kpi-v kpi-blue"  id="ov-rdv-c">–</div></div>
+          <div class="kpi"><div class="kpi-l">Clients actifs</div>  <div class="kpi-v kpi-green" id="ov-cli-c">–</div></div>
+        </div>
+        <div class="ov-grid">
+          <div class="card"><div class="card-label">Mes tâches</div><div id="ov-tasks"></div></div>
+          <div class="card"><div class="card-label">Mes prochains RDV</div><div id="ov-rdv"></div></div>
+        </div>
+      </div>
+
+      <!-- TASKS -->
+      <div class="view" id="view-tasks"></div>
+
+      <!-- CALENDAR -->
+      <div class="view" id="view-calendar"></div>
+
+      <!-- CLIENTS -->
+      <div class="view" id="view-clients"></div>
+
+      <!-- SUPPLIERS -->
+      <div class="view" id="view-suppliers"></div>
+
+      <!-- INVOICES -->
+      <div class="view" id="view-invoices">
+        <div class="view active" id="view-invoices"></div>
+      </div>
+
+      <!-- CALCULATOR -->
+      <div class="view" id="view-calculator"></div>
+
+      <!-- MESSAGES -->
+      <div class="view" id="view-messages"></div>
+
+    </div>
+  </div>
+</div>
+
+<script src="js/modules.js"></script>
+<script>
+const VIEWS_C = ['overview','tasks','calendar','clients','suppliers','invoices','calculator','messages'];
+const VIEW_TITLES = {overview:'Dashboard',tasks:'Tâches',calendar:'Calendrier',clients:'Clients',suppliers:'Fournisseurs',invoices:'Facturation',calculator:'Calculateur',messages:'Messagerie'};
+
+function goView(name) {
+  VIEWS_C.forEach(v => {
+    document.getElementById('view-'+v)?.classList.toggle('active', v===name);
+    document.getElementById('ni-'+v)?.classList.toggle('active', v===name);
+  });
+  document.getElementById('topbar-title').textContent = VIEW_TITLES[name] || name;
+  const u = getCurrentUser();
+  if (name==='tasks')       renderTasks(u.email, u.role);
+  if (name==='calendar')    renderCalendar(u.email, u.role);
+  if (name==='clients')     renderClients();
+  if (name==='suppliers')   renderSuppliers();
+  if (name==='invoices')    renderInvoices(u.role);
+  if (name==='calculator')  renderCalculator();
+  if (name==='messages')    renderMessages();
+}
+function doLogout() { sessionStorage.removeItem('solaire_user'); window.location.href='index.html'; }
+
+document.addEventListener('DOMContentLoaded', function() {
+  const u = getCurrentUser();
+  if (!u) return;
+  document.getElementById('u-av').textContent   = u.initials;
+  document.getElementById('u-name').textContent = u.name;
+  initTheme();
+  const myTasks = DEMO_TASKS.filter(t=>t.assignee===u.email&&t.statut!=='complété');
+  const myRdv   = DEMO_APPOINTMENTS.filter(a=>a.assignee===u.email);
+  const activeCli = DEMO_CLIENTS.filter(c=>c.statut==='Actif');
+  document.getElementById('ov-tasks-c').textContent = myTasks.length;
+  document.getElementById('ov-rdv-c').textContent   = myRdv.length;
+  document.getElementById('ov-cli-c').textContent   = activeCli.length;
+  document.getElementById('ov-tasks').innerHTML = (myTasks.length ? myTasks : DEMO_TASKS.filter(t=>t.statut!=='complété')).slice(0,5).map(t=>`
+    <div class="ov-row"><span>${t.titre}</span><span style="font-size:11px;color:var(--text2)">${t.statut}</span></div>`).join('') || '<div style="color:var(--text3);font-size:13px;padding:12px 0">Aucune tâche active</div>';
+  document.getElementById('ov-rdv').innerHTML = DEMO_APPOINTMENTS.sort((a,b)=>a.date.localeCompare(b.date)).slice(0,4).map(a=>`
+    <div class="ov-row"><span>${a.titre}</span><span style="font-size:11px;color:var(--acc)">${fmtDate(a.date)}</span></div>`).join('') || '<div style="color:var(--text3);font-size:13px;padding:12px 0">Aucun RDV</div>';
+});
+</script>
+</body>
+</html>

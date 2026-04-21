@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<meta name="robots" content="noindex, nofollow"/>
+<title>Rejoindre Solaire — Candidature Commerciale</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+/* ── Tokens ──────────────────────────────────────────────── */
+:root {
+  --gold:    #D4A853;
+  --gold2:   #e8c070;
+  --bg:      #0a0c10;
+  --bg2:     #111520;
+  --bg3:     #181d2a;
+  --bord:    #222840;
+  --text:    #eef0f6;
+  --text2:   #8a90a8;
+  --text3:   #505878;
+  --red:     #ef4444;
+  --green:   #10b981;
+  --r:       12px;
+  --rs:      8px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:'DM Sans',sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;
+  font-size:15px;
+  line-height:1.6;
+  overflow-x:hidden;
+}
+
+/* ── Background atmosphere ───────────────────────────────── */
+.bg-orb{
+  position:fixed;
+  width:600px;height:600px;
+  background:radial-gradient(circle,rgba(212,168,83,.07) 0%,transparent 70%);
+  border-radius:50%;
+  top:-100px;left:-100px;
+  pointer-events:none;
+  z-index:0;
+}
+.bg-orb2{
+  position:fixed;
+  width:400px;height:400px;
+  background:radial-gradient(circle,rgba(59,130,246,.04) 0%,transparent 70%);
+  border-radius:50%;
+  bottom:0;right:-50px;
+  pointer-events:none;
+  z-index:0;
+}
+
+/* ── Layout ──────────────────────────────────────────────── */
+.page{position:relative;z-index:1;max-width:680px;margin:0 auto;padding:60px 24px 80px}
+
+/* ── Header ──────────────────────────────────────────────── */
+.logo-row{display:flex;align-items:center;gap:12px;margin-bottom:48px}
+.logo-icon{
+  width:44px;height:44px;
+  background:var(--gold);
+  border-radius:10px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:22px;
+  flex-shrink:0;
+}
+.logo-text{font-family:'Playfair Display',serif;font-size:22px;font-weight:700;letter-spacing:.01em}
+.logo-sub{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;margin-top:1px}
+
+.hero{margin-bottom:44px}
+.hero-label{
+  display:inline-flex;align-items:center;gap:8px;
+  background:rgba(212,168,83,.1);
+  border:1px solid rgba(212,168,83,.2);
+  color:var(--gold);
+  padding:5px 14px;border-radius:20px;
+  font-size:12px;font-weight:600;
+  text-transform:uppercase;letter-spacing:.08em;
+  margin-bottom:18px;
+}
+.hero h1{
+  font-family:'Playfair Display',serif;
+  font-size:clamp(28px,5vw,42px);
+  font-weight:700;
+  line-height:1.2;
+  margin-bottom:16px;
+  letter-spacing:-.02em;
+}
+.hero h1 em{color:var(--gold);font-style:normal}
+.hero-desc{font-size:15px;color:var(--text2);max-width:520px;line-height:1.7}
+
+/* ── What we offer ───────────────────────────────────────── */
+.perks{
+  display:grid;grid-template-columns:1fr 1fr;gap:10px;
+  margin-bottom:40px;
+}
+.perk{
+  background:var(--bg2);
+  border:1px solid var(--bord);
+  border-radius:var(--rs);
+  padding:14px 16px;
+  display:flex;align-items:flex-start;gap:10px;
+}
+.perk-icon{font-size:18px;flex-shrink:0;margin-top:1px}
+.perk-label{font-size:13px;font-weight:500}
+.perk-sub{font-size:11px;color:var(--text3);margin-top:2px}
+
+/* ── Form card ───────────────────────────────────────────── */
+.form-card{
+  background:var(--bg2);
+  border:1px solid var(--bord);
+  border-radius:16px;
+  padding:36px 32px;
+  box-shadow:0 8px 40px rgba(0,0,0,.4);
+}
+.form-title{
+  font-family:'Playfair Display',serif;
+  font-size:20px;font-weight:700;
+  margin-bottom:28px;
+  display:flex;align-items:center;gap:10px;
+}
+.form-title::after{content:'';flex:1;height:1px;background:var(--bord)}
+
+/* ── Fields ──────────────────────────────────────────────── */
+.field{margin-bottom:20px}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
+label{
+  display:block;
+  font-size:12px;font-weight:600;
+  color:var(--text2);
+  text-transform:uppercase;letter-spacing:.06em;
+  margin-bottom:7px;
+}
+label .req{color:var(--gold);margin-left:2px}
+input,select,textarea{
+  width:100%;
+  background:var(--bg3);
+  border:1px solid var(--bord);
+  border-radius:var(--rs);
+  color:var(--text);
+  padding:11px 14px;
+  font-size:14px;
+  font-family:'DM Sans',sans-serif;
+  outline:none;
+  transition:border-color .15s,background .15s;
+  -webkit-appearance:none;
+}
+input:focus,select:focus,textarea:focus{
+  border-color:var(--gold);
+  background:rgba(212,168,83,.04);
+}
+input::placeholder,textarea::placeholder{color:var(--text3)}
+select{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238a90a8' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:36px}
+select option{background:var(--bg2)}
+textarea{resize:vertical;min-height:100px;line-height:1.55}
+
+/* ── Checkboxes ──────────────────────────────────────────── */
+.check-group{display:flex;flex-direction:column;gap:8px}
+.check-item{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 14px;
+  background:var(--bg3);
+  border:1px solid var(--bord);
+  border-radius:var(--rs);
+  cursor:pointer;
+  transition:border-color .15s;
+  user-select:none;
+}
+.check-item:hover{border-color:rgba(212,168,83,.3)}
+.check-item input[type=checkbox]{
+  width:16px;height:16px;
+  flex-shrink:0;padding:0;
+  accent-color:var(--gold);
+  cursor:pointer;
+}
+.check-item label{font-size:13px;color:var(--text);text-transform:none;letter-spacing:0;margin:0;cursor:pointer;font-weight:400}
+
+/* ── File upload ─────────────────────────────────────────── */
+.upload-zone{
+  border:2px dashed var(--bord);
+  border-radius:var(--rs);
+  padding:28px 20px;
+  text-align:center;
+  cursor:pointer;
+  transition:border-color .2s,background .2s;
+  position:relative;
+}
+.upload-zone:hover,.upload-zone.drag-over{
+  border-color:var(--gold);
+  background:rgba(212,168,83,.04);
+}
+.upload-zone input[type=file]{
+  position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;
+}
+.upload-icon{font-size:28px;margin-bottom:10px}
+.upload-label{font-size:14px;font-weight:500}
+.upload-sub{font-size:12px;color:var(--text3);margin-top:4px}
+.upload-preview{
+  display:none;align-items:center;gap:10px;
+  background:rgba(16,185,129,.08);
+  border:1px solid rgba(16,185,129,.2);
+  border-radius:var(--rs);
+  padding:10px 14px;margin-top:10px;
+  font-size:13px;color:var(--green);
+}
+.upload-preview.show{display:flex}
+.upload-preview-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.upload-remove{background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px;padding:0;flex-shrink:0}
+.upload-remove:hover{color:var(--red)}
+
+/* ── Section separator ───────────────────────────────────── */
+.section-sep{
+  display:flex;align-items:center;gap:12px;
+  margin:28px 0 20px;
+}
+.section-sep-label{font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;white-space:nowrap}
+.section-sep-line{flex:1;height:1px;background:var(--bord)}
+
+/* ── Error / Success states ──────────────────────────────── */
+.field-error{font-size:12px;color:var(--red);margin-top:5px;display:none}
+.field-error.show{display:block}
+input.invalid,select.invalid{border-color:var(--red)}
+
+/* ── Submit ──────────────────────────────────────────────── */
+.submit-btn{
+  width:100%;
+  background:var(--gold);
+  color:#0a0c10;
+  border:none;
+  border-radius:var(--rs);
+  padding:15px 24px;
+  font-size:15px;font-weight:700;
+  font-family:'DM Sans',sans-serif;
+  cursor:pointer;
+  margin-top:8px;
+  transition:all .2s;
+  display:flex;align-items:center;justify-content:center;gap:10px;
+  letter-spacing:.01em;
+}
+.submit-btn:hover{background:var(--gold2);transform:translateY(-1px);box-shadow:0 4px 20px rgba(212,168,83,.3)}
+.submit-btn:active{transform:translateY(0)}
+.submit-btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.submit-btn .spinner{
+  width:18px;height:18px;
+  border:2px solid rgba(0,0,0,.3);
+  border-top-color:#000;
+  border-radius:50%;
+  animation:spin .7s linear infinite;
+  display:none;
+}
+.submit-btn.loading .spinner{display:block}
+.submit-btn.loading .btn-text{display:none}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── Success screen ──────────────────────────────────────── */
+.success-screen{
+  display:none;
+  text-align:center;
+  padding:60px 32px;
+}
+.success-screen.show{display:block}
+.form-card.hidden{display:none}
+.success-icon{font-size:56px;margin-bottom:20px;animation:pop .4s ease}
+@keyframes pop{0%{transform:scale(.5);opacity:0}80%{transform:scale(1.1)}100%{transform:scale(1);opacity:1}}
+.success-title{font-family:'Playfair Display',serif;font-size:26px;font-weight:700;margin-bottom:12px}
+.success-desc{color:var(--text2);font-size:15px;max-width:380px;margin:0 auto;line-height:1.7}
+
+/* ── Supabase config notice ──────────────────────────────── */
+.config-banner{
+  background:rgba(239,68,68,.1);
+  border:1px solid rgba(239,68,68,.25);
+  border-radius:var(--rs);
+  padding:12px 16px;
+  margin-bottom:24px;
+  font-size:13px;
+  color:#f87171;
+  display:none;
+}
+.config-banner.show{display:block}
+</style>
+</head>
+<body>
+
+<div class="bg-orb"></div>
+<div class="bg-orb2"></div>
+
+<!-- SUCCESS SCREEN -->
+<div class="page">
+  <div class="success-screen" id="success-screen">
+    <div class="success-icon">🌟</div>
+    <div class="success-title">Candidature envoyée !</div>
+    <div class="success-desc">Merci pour votre intérêt. Notre équipe examinera votre dossier et reviendra vers vous dans les 48h.</div>
+  </div>
+
+  <!-- CONFIG BANNER -->
+  <div class="config-banner" id="config-banner">
+    ⚠️ Supabase non configuré — connectez les variables SUPABASE_URL et SUPABASE_ANON_KEY pour activer les soumissions.
+  </div>
+
+  <!-- HEADER -->
+  <div class="logo-row">
+    <div class="logo-icon">☀️</div>
+    <div>
+      <div class="logo-text">SOLAIRE</div>
+      <div class="logo-sub">Helios Thailand</div>
+    </div>
+  </div>
+
+  <div class="hero">
+    <div class="hero-label">📍 Poste ouvert</div>
+    <h1>Commercial terrain <em>Helios</em><br/>Thaïlande & ASEAN</h1>
+    <div class="hero-desc">Vous avez un réseau dans l'hôtellerie, les beach clubs ou les resorts haut de gamme ? Rejoignez Solaire et déployez notre technologie solaire de brumisation dans les plus beaux établissements d'Asie du Sud-Est.</div>
+  </div>
+
+  <div class="perks">
+    <div class="perk">
+      <div class="perk-icon">💰</div>
+      <div><div class="perk-label">Commission attractive</div><div class="perk-sub">Rémunération à la performance</div></div>
+    </div>
+    <div class="perk">
+      <div class="perk-icon">🏝️</div>
+      <div><div class="perk-label">Zones premium</div><div class="perk-sub">Phuket, Samui, Pattaya, Bali</div></div>
+    </div>
+    <div class="perk">
+      <div class="perk-icon">🤝</div>
+      <div><div class="perk-label">Autonomie totale</div><div class="perk-sub">Flexibilité & remote possible</div></div>
+    </div>
+    <div class="perk">
+      <div class="perk-icon">🚀</div>
+      <div><div class="perk-label">Projet en croissance</div><div class="perk-sub">Startup tech — lancement Q2 2025</div></div>
+    </div>
+  </div>
+
+  <!-- FORM -->
+  <div class="form-card" id="form-card">
+    <div class="form-title">Votre candidature</div>
+
+    <form id="apply-form" novalidate>
+
+      <!-- Infos personnelles -->
+      <div class="field-row">
+        <div class="field">
+          <label>Prénom & Nom <span class="req">*</span></label>
+          <input type="text" id="f-name" placeholder="Jean Dupont" autocomplete="name"/>
+          <div class="field-error" id="err-name">Nom requis</div>
+        </div>
+        <div class="field">
+          <label>WhatsApp <span class="req">*</span></label>
+          <input type="tel" id="f-whatsapp" placeholder="+66 XX XXX XXXX" autocomplete="tel"/>
+          <div class="field-error" id="err-whatsapp">WhatsApp requis</div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Email <span class="req">*</span></label>
+        <input type="email" id="f-email" placeholder="votre@email.com" autocomplete="email"/>
+        <div class="field-error" id="err-email">Email valide requis</div>
+      </div>
+
+      <!-- Source -->
+      <div class="section-sep">
+        <div class="section-sep-line"></div>
+        <div class="section-sep-label">Origine</div>
+        <div class="section-sep-line"></div>
+      </div>
+
+      <div class="field">
+        <label>Comment avez-vous connu ce poste ? <span class="req">*</span></label>
+        <select id="f-source">
+          <option value="">— Sélectionner —</option>
+          <option value="LinkedIn Jobs">LinkedIn Jobs</option>
+          <option value="Post organique">Post organique (LinkedIn / Instagram)</option>
+          <option value="Meta Ads">Meta Ads (Facebook / Instagram)</option>
+          <option value="Recommandation">Recommandation d'une personne</option>
+          <option value="Chasse directe">Approche directe (message reçu)</option>
+          <option value="Event">Event / rencontre</option>
+          <option value="Autre">Autre</option>
+        </select>
+        <div class="field-error" id="err-source">Veuillez sélectionner une source</div>
+      </div>
+
+      <!-- Zone -->
+      <div class="section-sep">
+        <div class="section-sep-line"></div>
+        <div class="section-sep-label">Zone & Profil</div>
+        <div class="section-sep-line"></div>
+      </div>
+
+      <div class="field">
+        <label>Zone(s) cible(s) <span class="req">*</span></label>
+        <div class="check-group" id="zones-group">
+          <div class="check-item"><input type="checkbox" id="z-phuket" value="Phuket"/><label for="z-phuket">📍 Phuket</label></div>
+          <div class="check-item"><input type="checkbox" id="z-samui" value="Samui"/><label for="z-samui">📍 Koh Samui</label></div>
+          <div class="check-item"><input type="checkbox" id="z-pattaya" value="Pattaya"/><label for="z-pattaya">📍 Pattaya</label></div>
+          <div class="check-item"><input type="checkbox" id="z-bali" value="Bali"/><label for="z-bali">📍 Bali</label></div>
+          <div class="check-item"><input type="checkbox" id="z-autre" value="Autre"/><label for="z-autre">📍 Autre zone (préciser en notes)</label></div>
+        </div>
+        <div class="field-error" id="err-zones">Sélectionnez au moins une zone</div>
+      </div>
+
+      <div class="field">
+        <label>Taille de votre réseau établissements</label>
+        <select id="f-reseau">
+          <option value="">— Sélectionner —</option>
+          <option value="1-5">1 à 5 établissements</option>
+          <option value="5-10">5 à 10 établissements</option>
+          <option value="10-15">10 à 15 établissements</option>
+          <option value="15+">15 établissements et plus</option>
+          <option value="0">Débutant — réseau à construire</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Disponibilité hebdomadaire</label>
+        <select id="f-dispo">
+          <option value="">— Sélectionner —</option>
+          <option value="10-20h">10 à 20h / semaine</option>
+          <option value="20-30h">20 à 30h / semaine</option>
+          <option value="Temps plein">Temps plein (35h+)</option>
+          <option value="Flexible">Flexible — à discuter</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Commission only</label>
+        <select id="f-commission">
+          <option value="">— Sélectionner —</option>
+          <option value="Oui">Oui, j'accepte</option>
+          <option value="A discuter">À discuter en entretien</option>
+          <option value="Non">Non, je cherche un fixe</option>
+        </select>
+      </div>
+
+      <!-- Présentation -->
+      <div class="section-sep">
+        <div class="section-sep-line"></div>
+        <div class="section-sep-label">Présentation</div>
+        <div class="section-sep-line"></div>
+      </div>
+
+      <div class="field">
+        <label>Parlez-nous de vous <span class="req">*</span></label>
+        <textarea id="f-message" placeholder="Décrivez votre expérience dans l'hôtellerie, votre réseau, vos motivations pour rejoindre Solaire..."></textarea>
+        <div class="field-error" id="err-message">Message requis (minimum 30 caractères)</div>
+      </div>
+
+      <!-- Pièce jointe -->
+      <div class="section-sep">
+        <div class="section-sep-line"></div>
+        <div class="section-sep-label">Pièce jointe</div>
+        <div class="section-sep-line"></div>
+      </div>
+
+      <div class="field">
+        <label>CV ou tout document pertinent</label>
+        <div class="upload-zone" id="upload-zone">
+          <input type="file" id="f-file" accept="*" onchange="handleFile(this)"/>
+          <div class="upload-icon">📎</div>
+          <div class="upload-label">Glisser-déposer ou cliquer pour parcourir</div>
+          <div class="upload-sub">Tous formats acceptés — max 10 MB</div>
+        </div>
+        <div class="upload-preview" id="upload-preview">
+          <span>📄</span>
+          <span class="upload-preview-name" id="upload-name"></span>
+          <button type="button" class="upload-remove" onclick="removeFile()">✕</button>
+        </div>
+        <div class="field-error" id="err-file"></div>
+      </div>
+
+      <button type="button" class="submit-btn" id="submit-btn" onclick="submitForm()">
+        <div class="spinner"></div>
+        <span class="btn-text">Envoyer ma candidature →</span>
+      </button>
+
+    </form>
+  </div>
+
+  <!-- Footer -->
+  <div style="text-align:center;margin-top:32px;font-size:12px;color:var(--text3)">
+    Solaire — Confidentiel · Cette page n'est pas indexée par les moteurs de recherche
+  </div>
+</div>
+
+<!-- Supabase CDN -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
+// ── CONFIG — remplacer par vos vraies valeurs ─────────────
+const SUPABASE_URL  = 'VOTRE_SUPABASE_URL';
+const SUPABASE_KEY  = 'VOTRE_SUPABASE_ANON_KEY';
+const STORAGE_BUCKET = 'candidate-files';
+// ─────────────────────────────────────────────────────────
+
+let supabase = null;
+let uploadedFile = null;
+let uploadedFileUrl = null;
+
+// Init Supabase
+try {
+  if (SUPABASE_URL !== 'VOTRE_SUPABASE_URL') {
+    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  } else {
+    document.getElementById('config-banner').classList.add('show');
+  }
+} catch(e) {
+  console.error('Supabase init error:', e);
+}
+
+// ── File handling ────────────────────────────────────────
+function handleFile(input) {
+  const file = input.files[0];
+  if (!file) return;
+  if (file.size > 10 * 1024 * 1024) {
+    showFieldError('err-file', 'Fichier trop volumineux (max 10 MB)');
+    input.value = ''; return;
+  }
+  uploadedFile = file;
+  document.getElementById('upload-name').textContent = file.name;
+  document.getElementById('upload-preview').classList.add('show');
+  hideFieldError('err-file');
+}
+function removeFile() {
+  uploadedFile = null;
+  uploadedFileUrl = null;
+  document.getElementById('f-file').value = '';
+  document.getElementById('upload-preview').classList.remove('show');
+}
+
+// Drag & drop
+const zone = document.getElementById('upload-zone');
+zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag-over'); });
+zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+zone.addEventListener('drop', e => {
+  e.preventDefault(); zone.classList.remove('drag-over');
+  const file = e.dataTransfer.files[0];
+  if (file) { document.getElementById('f-file').files = e.dataTransfer.files; handleFile(document.getElementById('f-file')); }
+});
+
+// ── Validation ────────────────────────────────────────────
+function showFieldError(id, msg) {
+  const el = document.getElementById(id);
+  if (el) { el.textContent = msg || el.textContent; el.classList.add('show'); }
+}
+function hideFieldError(id) { document.getElementById(id)?.classList.remove('show'); }
+function setInvalid(id) { document.getElementById(id)?.classList.add('invalid'); }
+function setValid(id) { document.getElementById(id)?.classList.remove('invalid'); }
+
+function validate() {
+  let ok = true;
+  const name = document.getElementById('f-name').value.trim();
+  const whatsapp = document.getElementById('f-whatsapp').value.trim();
+  const email = document.getElementById('f-email').value.trim();
+  const source = document.getElementById('f-source').value;
+  const message = document.getElementById('f-message').value.trim();
+  const zones = [...document.querySelectorAll('#zones-group input:checked')].map(c=>c.value);
+
+  if (!name) { showFieldError('err-name'); setInvalid('f-name'); ok=false; } else { hideFieldError('err-name'); setValid('f-name'); }
+  if (!whatsapp) { showFieldError('err-whatsapp'); setInvalid('f-whatsapp'); ok=false; } else { hideFieldError('err-whatsapp'); setValid('f-whatsapp'); }
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showFieldError('err-email'); setInvalid('f-email'); ok=false; } else { hideFieldError('err-email'); setValid('f-email'); }
+  if (!source) { showFieldError('err-source'); setInvalid('f-source'); ok=false; } else { hideFieldError('err-source'); setValid('f-source'); }
+  if (!zones.length) { showFieldError('err-zones'); ok=false; } else { hideFieldError('err-zones'); }
+  if (!message || message.length < 30) { showFieldError('err-message'); setInvalid('f-message'); ok=false; } else { hideFieldError('err-message'); setValid('f-message'); }
+  return ok;
+}
+
+// ── Submit ────────────────────────────────────────────────
+async function submitForm() {
+  if (!validate()) return;
+  const btn = document.getElementById('submit-btn');
+  btn.classList.add('loading'); btn.disabled = true;
+
+  const zones = [...document.querySelectorAll('#zones-group input:checked')].map(c=>c.value);
+  const payload = {
+    nom:          document.getElementById('f-name').value.trim(),
+    whatsapp:     document.getElementById('f-whatsapp').value.trim(),
+    email:        document.getElementById('f-email').value.trim(),
+    source:       document.getElementById('f-source').value,
+    zones,
+    reseau:       document.getElementById('f-reseau').value || null,
+    disponibilite:document.getElementById('f-dispo').value || null,
+    commission:   document.getElementById('f-commission').value || null,
+    message:      document.getElementById('f-message').value.trim(),
+    etape:        'lead',
+    statut:       'actif',
+    file_url:     null,
+    file_name:    null,
+  };
+
+  try {
+    // Upload file if present
+    if (uploadedFile && supabase) {
+      const ext = uploadedFile.name.split('.').pop();
+      const path = `${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
+      const { data: fData, error: fErr } = await supabase.storage
+        .from(STORAGE_BUCKET)
+        .upload(path, uploadedFile, { contentType: uploadedFile.type, upsert: false });
+      if (!fErr) {
+        const { data: urlData } = supabase.storage.from(STORAGE_BUCKET).getPublicUrl(path);
+        payload.file_url  = urlData?.publicUrl || null;
+        payload.file_name = uploadedFile.name;
+      }
+    }
+
+    if (supabase) {
+      const { error } = await supabase.from('candidates').insert([payload]);
+      if (error) throw error;
+    } else {
+      // Demo mode — simulate delay
+      await new Promise(r => setTimeout(r, 1200));
+    }
+
+    // Success
+    document.getElementById('form-card').classList.add('hidden');
+    document.getElementById('success-screen').classList.add('show');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+  } catch(err) {
+    console.error('Submit error:', err);
+    btn.classList.remove('loading'); btn.disabled = false;
+    alert('Une erreur est survenue. Veuillez réessayer ou nous contacter directement sur WhatsApp.');
+  }
+}
+</script>
+</body>
+</html>
