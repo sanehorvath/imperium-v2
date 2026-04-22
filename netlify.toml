@@ -4,9 +4,22 @@
   functions = "netlify/functions"
 
 [[redirects]]
+  from = "/dashboard-founder.html"
+  to = "/dashboard-founder.html"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/dashboard-commercial.html"
+  to = "/dashboard-commercial.html"
+  status = 200
+  force = true
+
+[[redirects]]
   from = "/formulaire-recrutement"
   to = "/formulaire-recrutement.html"
   status = 200
+  force = true
 
 [[redirects]]
   from = "/*"
