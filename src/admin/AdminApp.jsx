@@ -18,26 +18,28 @@ import AdminCategories from './AdminCategories'
 import PaliersConfig from './PaliersConfig'
 import Comptes from './Comptes'
 import MonProfil from './MonProfil'
+import Recrutement from './Recrutement'
 
 const NAV_ADMIN = [
   { section: 'Admin', items: [
-    { id: 'overview',    label: 'Vue générale',   icon: '◈' },
-    { id: 'salaires',    label: 'Salaires',        icon: '💰' },
-    { id: 'reporting',   label: 'Reporting',       icon: '📊' },
-    { id: 'facturation', label: 'Facturation',     icon: '◎' },
-    { id: 'equipe',      label: 'Gestion Équipe',  icon: '◐' },
-    { id: 'paliers',     label: 'Paliers & Taux',  icon: '⊟' },
-    { id: 'categories',  label: 'Catégories',      icon: '⊞' },
+    { id: 'overview',     label: 'Vue générale',   icon: '◈' },
+    { id: 'salaires',     label: 'Salaires',        icon: '💰' },
+    { id: 'reporting',    label: 'Reporting',       icon: '📊' },
+    { id: 'facturation',  label: 'Facturation',     icon: '◎' },
+    { id: 'equipe',       label: 'Gestion Équipe',  icon: '◐' },
+    { id: 'recrutement',  label: 'Recrutement',     icon: '🎯' },
+    { id: 'paliers',      label: 'Paliers & Taux',  icon: '⊟' },
+    { id: 'categories',   label: 'Catégories',      icon: '⊞' },
   ]},
   { section: 'Contenu', items: [
-    { id: 'comptes',     label: 'Comptes',         icon: '◉' },
-    { id: 'modeles',     label: 'Modèles',         icon: '◆' },
-    { id: 'media',       label: 'Médiathèque',     icon: '▦' },
-    { id: 'formation',   label: 'Formation',       icon: '▣' },
-    { id: 'stories',     label: 'Stories',         icon: '◷' },
+    { id: 'comptes',      label: 'Comptes',         icon: '◉' },
+    { id: 'modeles',      label: 'Modèles',         icon: '◆' },
+    { id: 'media',        label: 'Médiathèque',     icon: '▦' },
+    { id: 'formation',    label: 'Formation',       icon: '▣' },
+    { id: 'stories',      label: 'Stories',         icon: '◷' },
   ]},
   { section: 'Mon compte', items: [
-    { id: 'mon_profil',  label: 'Mon profil',      icon: '◈' },
+    { id: 'mon_profil',   label: 'Mon profil',      icon: '◈' },
   ]},
 ]
 
@@ -62,6 +64,7 @@ export default function AdminApp() {
       case 'reporting':   return <Reporting />
       case 'facturation': return <Facturation />
       case 'equipe':      return <GestionEquipe />
+      case 'recrutement': return <Recrutement />
       case 'paliers':     return <PaliersConfig />
       case 'categories':  return <AdminCategories />
       case 'comptes':     return <Comptes isAdmin={true} />
@@ -85,12 +88,9 @@ export default function AdminApp() {
         input, textarea, select {
           background: ${C.surface2} !important;
           border: 1px solid ${C.border} !important;
-          border-radius: 8px;
-          padding: 8px 12px;
-          color: ${C.text} !important;
-          font-size: 13px;
-          font-family: 'DM Sans', sans-serif;
-          outline: none;
+          border-radius: 8px; padding: 8px 12px;
+          color: ${C.text} !important; font-size: 13px;
+          font-family: 'DM Sans', sans-serif; outline: none;
         }
         input:focus, textarea:focus, select:focus { border-color: ${C.accent} !important; }
         select { appearance: none; }

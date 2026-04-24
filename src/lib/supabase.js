@@ -100,6 +100,7 @@ export async function fetchAll() {
     supabase.from('stories').select('*'),
     supabase.from('story_days').select('*'),
     supabase.from('story_items').select('*'),
+    supabase.from('candidatures').select('*'),
   ])
 
   return {

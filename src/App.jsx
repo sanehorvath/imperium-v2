@@ -5,18 +5,23 @@ import Login from './auth/Login'
 import AdminApp from './admin/AdminApp'
 import VAApp from './va/VAApp'
 import TLApp from './tl/TLApp'
+import RecruitForm from './pages/RecruitForm'
 import { C } from './lib/design'
 
 function Router() {
+  const path = window.location.pathname
+  if (path === '/recruter' || path.startsWith('/recruter/')) {
+    return <RecruitForm />
+  }
+  return <AuthRouter />
+}
+
+function AuthRouter() {
   const { user, profile, loading } = useApp()
 
   if (loading) {
     return (
-      <div style={{
-        minHeight: '100vh', background: C.bg,
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        fontFamily: "'DM Sans', sans-serif",
-      }}>
+      <div style={{ minHeight: '100vh', background: C.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'DM Sans', sans-serif" }}>
         <div style={{ textAlign: 'center' }}>
           <div style={{ fontSize: 9, fontWeight: 700, color: C.sub, letterSpacing: '0.2em', marginBottom: 6 }}>AGENCY</div>
           <div style={{ fontSize: 28, fontWeight: 800, color: C.text, letterSpacing: '-0.02em', marginBottom: 16 }}>IMPERIUM</div>
