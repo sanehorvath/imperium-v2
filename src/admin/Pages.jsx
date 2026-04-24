@@ -7,23 +7,11 @@ import { Modal, EmptyState, Field } from '../components/UI'
 export function Stories({ isAdmin = false }) {
   const { data, profile, upsert, insert } = useApp()
   const [selModelId, setSelModelId] = useState(null)
-  const [weekOffset, setWeekOffset] = useState(0) // 0 = current week, -1 = last week, etc.
-
-  function getWeekLabel(offset) {
-    const d = new Date()
-    d.setDate(d.getDate() + offset * 7)
-    const monday = new Date(d)
-    monday.setDate(d.getDate() - (d.getDay() === 0 ? 6 : d.getDay() - 1))
-    const sunday = new Date(monday)
-    sunday.setDate(monday.getDate() + 6)
-    const fmt = date => date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })
-    return offset === 0 ? 'Cette semaine' : `${fmt(monday)} – ${fmt(sunday)}`
-  }
+  const [weekOffset, setWeekOffset] = useState(0)
   const [editNarr, setEditNarr] = useState(false)
   const [narr, setNarr] = useState('')
   const [dayModal, setDayModal] = useState(null)
   const [form, setForm] = useState({ title: '', type: 'story', heure: '', note: '', drive: '' })
-  const [weekOffset, setWeekOffset] = useState(0) // 0 = semaine actuelle, -1 = semaine précédente, etc.
 
   // Calcul de la semaine affichée
   const weekLabel = React.useMemo(() => {
